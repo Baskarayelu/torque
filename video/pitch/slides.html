@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>TORQUE pitch</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#0d0f13; --surface:#151922; --ink:#eef0f4; --ink2:#9aa3b2; --line:#2a3140; --accent:#ff6a35; --good:#3fbf78; }
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 1920px; height: 1080px; background: var(--bg); color: var(--ink); font-family: Inter, sans-serif; overflow: hidden; }
+.slide { display: none; position: absolute; inset: 0; padding: 120px 140px; flex-direction: column; justify-content: center; }
+.slide.on { display: flex; }
+.brand { position: absolute; top: 64px; left: 140px; font: 700 26px "Space Grotesk"; letter-spacing: .1em; display: flex; gap: 14px; align-items: center; }
+.mark { width: 26px; height: 26px; border-radius: 50%; border: 5px solid var(--accent); border-right-color: transparent; transform: rotate(-30deg); }
+.foot { position: absolute; bottom: 60px; left: 140px; right: 140px; display: flex; justify-content: space-between; color: var(--ink2); font-size: 22px; }
+h1 { font: 700 104px/1.04 "Space Grotesk"; letter-spacing: -0.02em; }
+h2 { font: 700 72px/1.08 "Space Grotesk"; letter-spacing: -0.015em; margin-bottom: 40px; }
+.accent { color: var(--accent); }
+.lead { font-size: 40px; line-height: 1.4; color: var(--ink2); max-width: 1500px; }
+.lead b { color: var(--ink); font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 20px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 40px; }
+.stat .n { font: 600 88px "JetBrains Mono"; letter-spacing: -0.03em; }
+.stat .l { font-size: 28px; color: var(--ink2); margin-top: 10px; line-height: 1.35; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 36px; font-size: 30px; line-height: 1.4; color: var(--ink2); }
+.box b { display: block; color: var(--ink); font: 700 36px "Space Grotesk"; margin-bottom: 14px; }
+.box .k { font: 600 24px "JetBrains Mono"; color: var(--accent); display: block; margin-bottom: 10px; }
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.vs .box b { font-size: 40px; }
+.tick { color: var(--good); }
+.mono { font-family: "JetBrains Mono"; font-size: 26px; color: var(--ink2); line-height: 1.7; }
+</style></head>
+<body>
+<div class="brand"><span class="mark"></span>TORQUE</div>
+
+<section class="slide" data-id="title">
+  <h1>Knock-out leverage<br>on <span class="accent">NVDA</span>, settled in <span class="accent">USDG</span>.</h1>
+  <p class="lead" style="margin-top:40px">On Robinhood Chain. The most you can lose is what you put in.</p>
+</section>
+
+<section class="slide" data-id="problem">
+  <h2>The dollars are here. The leverage isn't.</h2>
+  <div class="stats">
+    <div class="stat"><div class="n">$690M</div><div class="l">of Paxos USDG on Robinhood Chain</div></div>
+    <div class="stat"><div class="n accent">$1.24M</div><div class="l">lent against stock tokens (171 Morpho markets)</div></div>
+    <div class="stat"><div class="n accent">98%</div><div class="l">of it already borrowed. NVDA market: 100%</div></div>
+  </div>
+  <p class="lead" style="margin-top:44px;font-size:30px">Read from Robinhood Chain mainnet, 2026-10-02. Reproducible scan in the repo.</p>
+</section>
+
+<section class="slide" data-id="product">
+  <h2>Pick NVDA. Choose 2–5×.<br>Pay in USDG.</h2>
+  <p class="lead"><b>The most you can ever lose is your margin.</b> No margin calls. Every position is backed by real NVDA, bought on-chain, and protected by Chainlink's NVDA price.</p>
+</section>
+
+<section class="slide" data-id="how">
+  <h2>How a position works</h2>
+  <div class="grid4">
+    <div class="box"><span class="k">01</span><b>Open</b>You post margin. The vault lends the rest. The whole size is bought as real NVDA in the Uniswap pool, within 1% of Chainlink.</div>
+    <div class="box"><span class="k">02</span><b>Hold</b>Debt accrues at 10% APR. The knock-out sits 5% above the price where the position is worth zero.</div>
+    <div class="box"><span class="k">03</span><b>Close</b>Sell back into the pool. The vault is repaid in full; you keep the rest.</div>
+    <div class="box"><span class="k">04</span><b>Knock-out</b>Chainlink prints at the barrier: anyone can close it. Vault first, the rest is yours.</div>
+  </div>
+</section>
+
+<section class="slide" data-id="solvency">
+  <h2>The main design job: LP solvency</h2>
+  <div class="grid3">
+    <div class="box"><b>Fully hedged</b>Every position is backed 1:1 by the real NVDA it bought. The vault is a secured lender, never short.</div>
+    <div class="box"><b>Capped in the contract</b>Vault ≤ $20. Open interest ≤ $30. Lending ≤ 80%. Leverage 2–5×. No admin key.</div>
+    <div class="box"><b>Two safety checks</b>Fresh Chainlink price, and the pool's 30-minute average agrees within 1.5%. Feed frozen, market moving: TORQUE stops.</div>
+  </div>
+</section>
+
+<section class="slide" data-id="evidence">
+  <h2>Invariants first, then the product</h2>
+  <div class="stats">
+    <div class="stat"><div class="n">9/9</div><div class="l">solvency invariants, ~131k calls each</div></div>
+    <div class="stat"><div class="n">32 + 5</div><div class="l">unit tests + tests against live mainnet state</div></div>
+    <div class="stat"><div class="n accent">18/18</div><div class="l">deliberately planted bugs caught</div></div>
+  </div>
+</section>
+
+<section class="slide" data-id="usdg">
+  <h2>USDG is the whole product</h2>
+  <div class="grid4">
+    <div class="box"><b>Margin</b>Traders post USDG.</div>
+    <div class="box"><b>Liquidity</b>LPs deposit USDG.</div>
+    <div class="box"><b>Loan</b>The vault lends USDG.</div>
+    <div class="box"><b>Payout</b>Everyone is paid in USDG.</div>
+  </div>
+</section>
+
+<section class="slide" data-id="field">
+  <h2>Against the field</h2>
+  <div class="vs">
+    <div class="box"><b>vs Gauntlet</b>Leverage in an off-chain game, priced in ETH by the operator's server. <span class="tick">TORQUE settles on-chain against the real Chainlink NVDA price, real NVDA and real USDG.</span></div>
+    <div class="box"><b>vs Undertow</b>A vault that lends a stablecoin it mints itself, with no deposits. <span class="tick">TORQUE's counterparty is a real USDG vault; every loan is secured by real NVDA.</span></div>
+  </div>
+</section>
+
+<section class="slide" data-id="status">
+  <h2 id="status-title">On Robinhood Chain mainnet.<br><span class="accent">LP vault capped at $20 USDG for the buildathon.</span></h2>
+  <p class="lead">Testnet has no real stock feeds and no stock pools, so a testnet version would prove nothing. Small, and real.</p>
+  <p class="mono" id="addrs" style="margin-top:36px"></p>
+  <p class="lead" style="margin-top:28px;font-size:32px">Next: shorts · more stocks · a bigger vault</p>
+</section>
+
+<div class="foot"><span>TORQUE · Arbitrum Open House Singapore Buildathon</span><span id="pg"></span></div>
+<script>
+const q = new URLSearchParams(location.search);
+const slides = [...document.querySelectorAll(".slide")];
+const i = Math.max(0, slides.findIndex(s => s.dataset.id === q.get("s")));
+slides[i].classList.add("on");
+document.getElementById("pg").textContent = `${i + 1} / ${slides.length}`;
+if (q.get("market")) {
+  document.getElementById("addrs").innerHTML = `Robinhood Chain: ${q.get("market")} — TorqueMarket<br>Robinhood Chain: ${q.get("vault")} — TorqueVault (USDG LP)`;
+} else {
+  document.getElementById("addrs").textContent = "Deploying to Robinhood Chain mainnet (chain 4663)";
+}
+</script>
+</body></html>

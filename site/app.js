@@ -4,6 +4,7 @@
   const E = window.ethers;
   const $ = (id) => document.getElementById(id);
   const read = new E.JsonRpcProvider(C.rpc, C.chainId, { staticNetwork: true });
+  const headlineRead = new E.JsonRpcProvider(C.headlineRpc || C.rpc, C.chainId, { staticNetwork: true });
   const deployed = Boolean(C.MARKET && C.VAULT);
 
   const ABI = {
@@ -27,7 +28,7 @@
       "function deposit(uint256,address) returns (uint256)", "function withdraw(uint256,address,address) returns (uint256)"],
   };
 
-  const usd = (x, d = 2) => "$" + Number(x).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const usd = (x, d = 2) => (Number(x) < 0 ? "−$" : "$") + Math.abs(Number(x)).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
   const compactUsd = (x) => x >= 1e6 ? "$" + (x / 1e6).toFixed(x >= 1e8 ? 0 : 2) + "M" : x >= 1e3 ? "$" + (x / 1e3).toFixed(1) + "k" : usd(x);
   const ago = (s) => s < 90 ? `${Math.round(s)}s ago` : s < 5400 ? `${Math.round(s / 60)} min ago` : `${(s / 3600).toFixed(1)} h ago`;
 
@@ -36,8 +37,8 @@
   // ------------------------------------------------------------- headline: USDG vs stock-backed lending
   async function loadHeadline() {
     try {
-      const usdg = new E.Contract(C.USDG, ABI.erc20, read);
-      const mc = new E.Contract(C.MULTICALL3, ABI.multicall, read);
+      const usdg = new E.Contract(C.USDG, ABI.erc20, headlineRead);
+      const mc = new E.Contract(C.MULTICALL3, ABI.multicall, headlineRead);
       const morphoI = new E.Interface(ABI.morpho);
       const calls = C.STOCK_USDG_MARKETS.map((id) => ({ target: C.MORPHO, allowFailure: true, callData: morphoI.encodeFunctionData("market", [id]) }));
       const [supply, res] = await Promise.all([usdg.totalSupply(), mc.aggregate3(calls)]);
@@ -144,11 +145,13 @@
     const ids = await m.openPositionIds();
     const mine = [];
     for (const id of ids) {
-      const p = await m.getPosition(id);
-      if (p.owner.toLowerCase() === state.account.toLowerCase()) {
-        const [debt, barrier] = await Promise.all([m.debtOf(id), m.barrierOf(id)]);
-        mine.push({ id, p, debt: Number(debt) / 1e6, barrier: Number(barrier) / 1e6 });
-      }
+      try {
+        const p = await m.getPosition(id);
+        if (p.owner.toLowerCase() === state.account.toLowerCase()) {
+          const [debt, barrier] = await Promise.all([m.debtOf(id), m.barrierOf(id)]);
+          mine.push({ id, p, debt: Number(debt) / 1e6, barrier: Number(barrier) / 1e6 });
+        }
+      } catch (e) { /* closed between the list read and this read */ }
     }
     const box = $("positions");
     if (!mine.length) box.innerHTML = `<p class="muted">No open positions.</p>`;
@@ -218,7 +221,12 @@
   }
 
   async function closePos(id) {
-    await run("open-why", () => new E.Contract(C.MARKET, ABI.market, state.signer).close(id, 0));
+    const usdg = new E.Contract(C.USDG, ABI.erc20, read);
+    const before = await usdg.balanceOf(state.account);
+    await run("open-why", () => new E.Contract(C.MARKET, ABI.market, state.signer).close(id, 0), async () => {
+      const got = Number((await usdg.balanceOf(state.account)) - before) / 1e6;
+      return ` · received ${usd(got)} USDG`;
+    });
   }
 
   async function lp(kind) {
@@ -230,14 +238,15 @@
     });
   }
 
-  async function run(msgId, fn) {
+  async function run(msgId, fn, after) {
     const el = $(msgId);
     try {
       el.textContent = "Confirm in your wallet…";
       const tx = await fn();
       el.innerHTML = `Submitted: <a href="${C.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">${tx.hash.slice(0, 10)}…</a>`;
       await tx.wait();
-      el.innerHTML = `Confirmed: <a href="${C.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">${tx.hash.slice(0, 10)}…</a>`;
+      const extra = after ? await after() : "";
+      el.innerHTML = `Confirmed: <a href="${C.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">${tx.hash.slice(0, 10)}…</a>${extra}`;
       refresh();
     } catch (e) {
       el.textContent = "Not sent: " + (e.shortMessage || e.reason || e.message || e);

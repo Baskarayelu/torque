@@ -3,6 +3,7 @@ window.TORQUE_CONFIG = {
   chainId: 4663,
   chainName: "Robinhood Chain",
   rpc: "https://rpc.mainnet.chain.robinhood.com",
+  headlineRpc: "https://rpc.mainnet.chain.robinhood.com", // USDG supply and Morpho reads (always mainnet)
   explorer: "https://robinhoodchain.blockscout.com",
   repo: "https://github.com/Baskarayelu/torque",
   MARKET: null,

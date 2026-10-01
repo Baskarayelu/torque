@@ -1,0 +1,6 @@
+{
+  "name": "torque-video",
+  "private": true,
+  "description": "Builds the TORQUE Demo Video and Pitch Video",
+  "dependencies": { "ethers": "6.13.4", "playwright": "1.63.0" }
+}

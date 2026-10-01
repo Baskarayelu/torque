@@ -1,0 +1,10 @@
+[
+  {"id": "hero", "text": "This is TORQUE, on Robinhood Chain. The chain holds almost seven hundred million dollars of USDG. Only one point two four million of it is lent against stock tokens, and ninety eight percent of that is already borrowed. The demand for stock leverage is there. The dollars are not."},
+  {"id": "checks", "text": "Before it acts, TORQUE runs two safety checks. Chainlink's NVDA price must be fresh, and the NVDA pool's own thirty minute average must agree with it, within one and a half percent. Both pass right now, so the market is open."},
+  {"id": "lp", "text": "First, liquidity. I connect a wallet and deposit fifteen USDG into the LP vault. The vault is capped at twenty USDG for the buildathon, and the cap is enforced in the contract."},
+  {"id": "quote", "text": "Now a trade. Two USDG of margin at five times buys about ten dollars of real NVDA. The vault lends the rest. The quote shows where the position is worth zero, and the knock out level five percent above it. The most I can lose is my two dollars."},
+  {"id": "open", "text": "I open the position. The contract buys real NVDA in the Uniswap pool, within one percent of Chainlink, and holds it as the hedge."},
+  {"id": "position", "text": "Here is the position, with its knock out level and its live profit and loss. If Chainlink prints at or below the barrier, anyone can knock it out, and the vault is repaid first."},
+  {"id": "close", "text": "Closing sells the NVDA back into the pool. The vault is repaid in full, and the rest comes back to me in USDG."},
+  {"id": "end", "text": "No admin key, no pause, no upgrade path. Margin, liquidity and payouts are all Paxos USDG. The code, the spec and the tests are on GitHub."}
+]

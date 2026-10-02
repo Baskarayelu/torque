@@ -2,3 +2,6 @@ out/
 cache/
 broadcast/*/dry-run/
 .env
+app/node_modules/
+app/dist/
+app/public/config.fork.json

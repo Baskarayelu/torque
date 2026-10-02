@@ -1,0 +1,15 @@
+{
+  "environment": "mainnet",
+  "chainId": 4663,
+  "chainName": "Robinhood Chain",
+  "rpc": "https://rpc.mainnet.chain.robinhood.com",
+  "explorer": "https://robinhoodchain.blockscout.com",
+  "repo": "https://github.com/Baskarayelu/torque",
+  "landing": "https://torque.0xo.in",
+  "MARKET": null,
+  "VAULT": null,
+  "USDG": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "NVDA": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+  "POOL": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+  "FEED": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15"
+}

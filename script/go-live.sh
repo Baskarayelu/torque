@@ -72,7 +72,7 @@ forge build -q || die "build failed"
 forge test --no-match-path "test/fork/*" -q > "$RUN/tests.log" 2>&1 || die "test suite failed (see $RUN/tests.log)"; ok "unit, adversarial and invariant suites pass"
 # a rehearsal's anvil is itself a fork; fork tests go to real mainnet instead of forking the fork
 FORK_TEST_RPC=$RH_RPC_URL; [ -n "$REHEARSAL" ] && FORK_TEST_RPC=https://rpc.mainnet.chain.robinhood.com
-RH_RPC_URL="$FORK_TEST_RPC" forge test --match-path "test/fork/*" -q > "$RUN/fork-tests.log" 2>&1 || die "fork tests against mainnet state failed"; ok "fork tests pass against live mainnet state"
+RH_RPC_URL="$FORK_TEST_RPC" forge test --match-path "test/fork/*" -q --fork-retries 12 --fork-retry-backoff 4000 --compute-units-per-second 60 > "$RUN/fork-tests.log" 2>&1 || die "fork tests against mainnet state failed"; ok "fork tests pass against live mainnet state"
 phase "3/7 Simulate the deployment (no broadcast)"
 SIM=$(SEED_USDG=$SEED_USDG forge script script/Deploy.s.sol --rpc-url "$RH_RPC_URL" --keystore "$KEYSTORE" --password-file "$PASS" --sender "$DEPLOYER" 2>&1) || { echo "$SIM" | tail -20; die "simulation failed"; }
 GAS_ETH=$(echo "$SIM" | grep -oE "Estimated amount required: [0-9.]+" | awk '{print $4}')

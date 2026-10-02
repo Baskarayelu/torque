@@ -64,11 +64,13 @@ const durations = JSON.parse(fs.readFileSync(path.join(OUT, "durations.json")));
   await step(2, async () => {
     await page.click("#connect"); await wait(1200);
     await scrollTo("#liquidity"); await wait(800);
-    await page.fill("#lp-amt", "15"); await wait(400);
+    await page.fill("#lp-amt", "5"); await wait(400);
     await page.click("#dep-btn");
-    await page.waitForFunction(() => /Confirmed/.test(document.getElementById("lp-why").textContent), null, { timeout: 120000 });
-    await wait(1500);
-  }, "Deposit 15 USDG into the LP vault (capped at $20 for the buildathon, in the contract)");
+    await page.waitForFunction(() => /Confirmed/.test(document.getElementById("lp-why").textContent), null, { timeout: 180000 });
+    await page.waitForFunction(() => document.getElementById("cap-fill").style.width === "100%", null, { timeout: 60000 }).catch(() => {});
+    await page.locator(".cap").hover();
+    await wait(1200);
+  }, "Add the last 5 USDG: the LP vault fills to its $20 cap (enforced in the contract)");
   await step(3, async () => {
     await scrollTo("#trade"); await wait(800);
     await page.fill("#margin", "2"); await page.click('#lev button[data-lev="5"]'); await wait(600);
@@ -76,15 +78,15 @@ const durations = JSON.parse(fs.readFileSync(path.join(OUT, "durations.json")));
   }, "$2 margin at 5x: ~$10 of real NVDA. Most you can lose: $2.");
   await step(4, async () => {
     await page.click("#open-btn");
-    await page.waitForFunction(() => /Confirmed/.test(document.getElementById("open-why").textContent), null, { timeout: 120000 });
+    await page.waitForFunction(() => /Confirmed/.test(document.getElementById("open-why").textContent), null, { timeout: 180000 });
     await wait(1500);
   }, "Open: the contract buys real NVDA in the Uniswap pool, within 1% of Chainlink");
   await step(5, async () => { await page.waitForSelector("[data-close]", { timeout: 60000 }); await page.locator(".pos").first().hover(); }, "Position: knock-out level and live P&L");
   await step(6, async () => {
     await page.evaluate(() => { document.getElementById("open-why").textContent = ""; });
     await page.click("[data-close]");
-    await page.waitForFunction(() => /Confirmed/.test(document.getElementById("open-why").textContent), null, { timeout: 120000 });
-    await page.waitForFunction(() => !document.querySelector("[data-close]"), null, { timeout: 120000 });
+    await page.waitForFunction(() => /Confirmed/.test(document.getElementById("open-why").textContent), null, { timeout: 180000 });
+    await page.waitForFunction(() => !document.querySelector("[data-close]"), null, { timeout: 180000 });
     await wait(1500);
   }, "Close: the vault is repaid in full; the rest comes back in USDG");
   await step(7, async () => { await scrollTo(".contracts"); }, "No admin key. USDG in, USDG out. Code, spec and tests on GitHub.");

@@ -69,9 +69,10 @@ There is **no owner, no pause and no upgrade path.** All parameters are constant
 | Suite | What it proves | Result |
 |---|---|---|
 | `test/invariant/` (written first) | 9 solvency invariants: full NVDA backing, cash conservation, the $20 cap, open-interest and utilization caps, NAV never overstated, **bad debt only after a real gap**, nothing unsafe succeeds when a safety check fails, exact payouts. The handler simulates weekends where the pool drifts away from a frozen feed and judges every action with its own independently computed geometric average | **9/9 pass**, 1,024 runs × 128 calls |
-| Planted-bug check | 18 deliberate bugs planted one at a time, such as: no buffer, knock-out on a stale feed, opens or LP flows skipping the pool check, loans marked at face value, the pool average ignored in NAV, a flipped tick sign, a 10× wider band, the strict knock-out rule | **18/18 caught.** The invariants alone catch the cap, buffer, open-without-pool-check and strict-knock-out faults |
-| `test/unit/` | Every path, including the full weekend gap, the Friday-evening divergence, a calm weekend closing on age, band edges, failing closed when the pool can't serve the average, and tick math | **32/32 pass**, including fuzz runs |
-| `test/fork/` | Real mainnet USDG, NVDA, pool and Chainlink feed | **5/5 pass**, including the tick conversion checked against the real pool's `sqrtPriceX96` |
+| `test/adversarial/` | An attacker's pass before mainnet ([research/ADVERSARIAL.md](research/ADVERSARIAL.md)). It covers reentrancy through a hook-calling token, first-depositor inflation, rounding farms, donations, knock-outs at a manipulated tick, sandwiching the hedge, same-block ordering, free positions, and a dead feed. **It found one real hole**: a dead price feed could have locked LP funds. It was fixed before deployment | **23/23 pass** |
+| Planted-bug check | 25 deliberate bugs planted one at a time, such as: no buffer, knock-out on a stale feed, a skipped pool check, loans marked at face value, a flipped tick sign, a 10× band, the strict knock-out rule, no reentrancy guard, a dead-feed unwind with no wait | **24/25 caught.** The one survivor removes one of two duplicate cap checks and changes no behaviour; removing both is caught |
+| `test/unit/` | Every path, including the full weekend gap, the Friday-evening divergence, a calm weekend closing on age, band edges, failing closed, and tick math | **32/32 pass**, including fuzz runs |
+| `test/fork/` | Real mainnet USDG, NVDA, pool and Chainlink feed, plus a sandwich on the real pool ($1k / $10k / $100k front-runs lose about $1 / $10 / $100) | **6/6 pass** |
 
 ```bash
 forge test                                              # unit + invariant
@@ -100,6 +101,7 @@ In this buildathon, two entries offer leverage on stock tokens. We read their co
 - **Calibration:** the 1.5% band and 30-minute window are based on one week of swaps that included one calm weekend. A weekend with a large pool move is modelled in the tests but has not been observed live.
 - **Corporate actions are not handled.** NVDA's UI multiplier is 1.000775 today, inside the 1% fill guard, and a fork test confirms the feed prices one raw token. A split during an open position is out of scope.
 - **Knock-outs need a caller.** There is no keeper reward in v1; we run `script/keeper.sh`.
+- **Dead feed:** if the feed has no usable print for 7 days, anyone may unwind positions at the pool's 30-minute average (vault repaid first). LPs can always withdraw when no positions are open.
 - **No sequencer-uptime check:** no such feed is known on Robinhood Chain.
 - **Not audited.**
 

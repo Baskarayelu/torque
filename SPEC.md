@@ -33,6 +33,8 @@ TORQUE reads one price, Chainlink's `RHNVDA / USD` on Robinhood Chain, and runs 
 | `deposit` / `mint` / `withdraw` / `redeem` | required | required |
 | `knockOut` | required | required **unless the feed printed within the last 30 minutes** |
 | `close` | not required | not required. It only ever succeeds if the vault is repaid in full |
+| `withdraw` / `redeem` with **no open positions** | not required | not required. NAV is exactly idle cash, so LPs can always leave |
+| `unwind` (emergency) | feed must be **dead** for 7 days | uses the pool average itself |
 
 ### Why both checks
 
@@ -87,6 +89,17 @@ So a knock-out may proceed on a Chainlink print from the last 30 minutes even if
 | `close` | position owner | sells `q` NVDA. **Reverts unless proceeds ≥ D(t)**, so the vault is always repaid in full. The trader keeps the rest and sets their own `minOut` |
 | `knockOut` | anyone | requires `P_feed ≤ B(t)`. Sells `q` NVDA with `minOut = q × P_feed × (1 − MAX_SLIPPAGE)`. Repays `min(proceeds, D)`. The residual is credited to the trader to `claim()`; any shortfall is **bad debt** borne by LPs |
 | `claim` | trader | withdraws knock-out residuals |
+| `unwind` | anyone, only once the feed is dead (`DEAD_FEED_AFTER` = 7 days without a usable print) | sells `q` NVDA with `minOut = q × P_pool30m × (1 − MAX_SLIPPAGE)`, then repays the vault first, credits the residual and books any shortfall, exactly like a knock-out |
+| `reportFeedDown` | anyone | starts the dead-feed clock for a feed that reverts or returns ≤ 0 (such a feed has no `updatedAt` to age). Any healthy read clears it: this call, `open`, `close` or `knockOut` |
+
+### Why the emergency unwind exists
+
+The adversarial pass found this hole: if the feed dies (deprecation, delisting, or a permanently reverting proxy), LP money must not be locked.
+- A broken feed reads as "no price"; it never reverts.
+- LPs can always exit when no positions are open.
+- An abandoned position can be unwound once the feed has been dead for 7 days. The longest normal freeze measured is 78h, so a holiday weekend can never trigger it.
+
+See [research/ADVERSARIAL.md](research/ADVERSARIAL.md).
 
 ### Why knock-out payouts are claimed, not pushed
 
@@ -127,11 +140,12 @@ A fresh position takes on no bad debt unless the Monday price is below `F / (1 �
 | `TWAP_WINDOW` | 30 minutes | pool agreement window; also the recency that lets a fresh print drive a knock-out |
 | `MAX_POOL_DEVIATION_BPS` | 1.5% | pool agreement band |
 | `MAX_FEED_AGE` | 12h | see the table above |
+| `DEAD_FEED_AFTER` | 7 days | emergency unwind threshold; more than 2× the longest normal freeze measured (78h) |
 | `FINANCING_APR` | 10% | paid to LPs; the barrier ratchets up over time |
 | `OPEN_FEE_BPS` | 0.10% of `margin × L` | paid to LPs |
 | `MIN_MARGIN` | 1 USDG | no dust positions |
 
-There is no owner, no pause and no upgradeability. The only privileged call is a one-shot `setMarket` from the deployer, used once at deployment.
+There is no owner, no pause and no upgradeability. The only privileged call is a one-shot `setMarket` from the deployer, used once at deployment. The deploy script seeds the vault in the same run, so nobody can be the first depositor in between.
 
 ## Invariants (written first, in `test/invariant/`)
 

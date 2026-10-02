@@ -34,6 +34,9 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
     uint256 public constant MAX_FEED_AGE = 12 hours;
     uint32 public constant TWAP_WINDOW = 30 minutes;
     uint256 public constant MAX_POOL_DEVIATION_BPS = 150;
+    /// After this long without a usable feed print, anyone may unwind positions at the pool's 30-minute
+    /// average so LP funds can never be locked by a dead feed. The longest normal freeze measured is 78h.
+    uint256 public constant DEAD_FEED_AFTER = 7 days;
 
     uint256 internal constant BPS = 10_000;
     uint256 internal constant YEAR = 365 days;
@@ -53,6 +56,9 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
     uint256 public totalBadDebt;
     uint256 public totalClaimable;
     uint256 public nextId = 1;
+    /// When a reverting or non-positive feed was first reported (0 = feed working). A broken feed has no
+    /// updatedAt to age, so the dead-feed clock for it starts here.
+    uint256 public feedDownSince;
 
     mapping(uint256 => Position) internal _positions;
     mapping(address => uint256) public claimable;
@@ -62,8 +68,10 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
 
     error PartialFill();
     error BadConfig();
+    error FeedNotDead();
 
     event Claimed(address indexed owner, uint256 amount);
+    event Unwound(uint256 indexed id, uint256 price, uint256 proceeds, uint256 repaid, uint256 payout, uint256 badDebt);
 
     constructor(IERC20 usdg_, IERC20 nvda_, IUniswapV3PoolMinimal pool_, IAggregatorV3 feed_, ITorqueVault vault_) {
         address t0 = pool_.token0();
@@ -87,10 +95,20 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
 
     /// @notice NVDA price in USDG units (6 decimals) per whole NVDA token, and whether it is fresh.
     function oraclePrice() public view returns (uint256 price6, bool fresh) {
-        (, int256 answer,, uint256 updatedAt,) = feed.latestRoundData();
-        if (answer <= 0) return (0, false);
-        price6 = uint256(answer) * 1e6 / feedUnit;
-        fresh = price6 > 0 && updatedAt <= block.timestamp && block.timestamp - updatedAt <= MAX_FEED_AGE;
+        uint256 age;
+        (price6, age) = _readFeed();
+        fresh = price6 > 0 && age <= MAX_FEED_AGE;
+    }
+
+    /// @dev A reverting or non-positive feed reads as "no price" (0, max age); it never reverts.
+    function _readFeed() internal view returns (uint256 price6, uint256 age) {
+        try feed.latestRoundData() returns (uint80, int256 answer, uint256, uint256 updatedAt, uint80) {
+            if (answer > 0) price6 = uint256(answer) * 1e6 / feedUnit;
+            age = updatedAt <= block.timestamp ? block.timestamp - updatedAt : type(uint256).max;
+            if (price6 == 0) age = type(uint256).max;
+        } catch {
+            return (0, type(uint256).max);
+        }
     }
 
     /// @notice NVDA price from the hedge pool's own 30-minute time-weighted average tick, in USDG
@@ -115,9 +133,7 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
         view
         returns (uint256 feedPrice6, uint256 feedAge, uint256 poolTwap6, uint256 deviationBps, bool feedFresh, bool poolAgrees)
     {
-        (, int256 answer,, uint256 updatedAt,) = feed.latestRoundData();
-        if (answer > 0) feedPrice6 = uint256(answer) * 1e6 / feedUnit;
-        feedAge = updatedAt <= block.timestamp ? block.timestamp - updatedAt : type(uint256).max;
+        (feedPrice6, feedAge) = _readFeed();
         feedFresh = feedPrice6 > 0 && feedAge <= MAX_FEED_AGE;
         poolTwap6 = poolTwapPrice();
         if (feedPrice6 > 0 && poolTwap6 > 0) {
@@ -152,10 +168,11 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
     ///         average, less max slippage). Conservative on purpose: a lagging or frozen feed never
     ///         props NAV up while the market trades lower.
     function markedDebt() external view returns (uint256 marked) {
+        uint256 n = _openIds.length;
+        if (n == 0) return 0; // no loans: NAV is idle cash, no price needed
         (uint256 price6,) = oraclePrice();
         uint256 twap6 = poolTwapPrice();
         if (twap6 < price6) price6 = twap6;
-        uint256 n = _openIds.length;
         for (uint256 i; i < n; i++) {
             Position memory p = _positions[_openIds[i]];
             uint256 debt = _debt(p);
@@ -170,6 +187,10 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
 
     function openPositionIds() external view returns (uint256[] memory) {
         return _openIds;
+    }
+
+    function openPositionCount() external view returns (uint256) {
+        return _openIds.length;
     }
 
     /// @notice What an open with these inputs would do at the current feed price (before slippage).
@@ -189,6 +210,7 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
 
     function open(uint256 margin, uint256 leverageBps, uint256 minNvdaOut) external nonReentrant returns (uint256 id) {
         uint256 price6 = _checkedPrice();
+        if (feedDownSince != 0) feedDownSince = 0; // a healthy print just read: clear any dead-feed clock
         if (leverageBps < MIN_LEVERAGE_BPS || leverageBps > MAX_LEVERAGE_BPS) revert BadLeverage();
         if (margin < MIN_MARGIN) revert MarginTooSmall();
         if (_openIds.length >= MAX_OPEN_POSITIONS) revert TooManyPositions();
@@ -226,6 +248,7 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
     function close(uint256 id, uint256 minPayout) external nonReentrant returns (uint256 payout) {
         Position memory p = _get(id);
         if (p.owner != msg.sender) revert NotOwner();
+        _clearFeedDownIfHealthy();
         uint256 debt = _debt(p);
         _remove(id, p);
 
@@ -247,6 +270,7 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
         // A Chainlink print from the last 30 minutes is trusted over a lagging 30-minute pool average,
         // so a fast in-session sell-off cannot hold up a knock-out. An older print must agree with the pool.
         if (!poolAgrees && feedAge > TWAP_WINDOW) revert PoolPriceMismatch();
+        if (feedDownSince != 0) feedDownSince = 0;
         Position memory p = _get(id);
         uint256 debt = _debt(p);
         if (price6 > _barrier(debt, p.q)) revert NotKnockable();
@@ -266,6 +290,48 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
             totalClaimable += payout;
         }
         emit KnockedOut(id, price6, proceeds, repaid, payout, badDebt);
+    }
+
+    /// @notice Emergency exit for a dead feed (no usable print for DEAD_FEED_AFTER). Anyone may unwind any
+    ///         position at the pool's 30-minute average less max slippage. The vault is repaid first, the
+    ///         residual is credited to the trader to claim, and any shortfall is bad debt.
+    function unwind(uint256 id) external nonReentrant returns (uint256 payout) {
+        if (!isFeedDead()) revert FeedNotDead();
+        uint256 twap6 = poolTwapPrice();
+        if (twap6 == 0) revert PoolPriceMismatch();
+        Position memory p = _get(id);
+        uint256 debt = _debt(p);
+        _remove(id, p);
+
+        uint256 proceeds = _swap(false, p.q);
+        if (proceeds < _minOut(p.q, twap6)) revert Slippage();
+
+        uint256 repaid = proceeds < debt ? proceeds : debt;
+        payout = proceeds - repaid;
+        uint256 badDebt = debt - repaid;
+        totalBadDebt += badDebt;
+
+        usdg.safeTransfer(address(vault), repaid);
+        if (payout > 0) {
+            claimable[p.owner] += payout;
+            totalClaimable += payout;
+        }
+        emit Unwound(id, twap6, proceeds, repaid, payout, badDebt);
+    }
+
+    /// @notice True once the feed has gone DEAD_FEED_AFTER without a usable print: either its last print is
+    ///         that old, or it has been reverting/non-positive since a report at least that long ago.
+    function isFeedDead() public view returns (bool) {
+        (uint256 price6, uint256 age) = _readFeed();
+        if (price6 > 0) return age > DEAD_FEED_AFTER;
+        return feedDownSince != 0 && block.timestamp - feedDownSince > DEAD_FEED_AFTER;
+    }
+
+    /// @notice Anyone may start (or clear) the dead-feed clock for a feed that reverts or returns <= 0.
+    function reportFeedDown() external {
+        (uint256 price6,) = _readFeed();
+        if (price6 > 0) feedDownSince = 0;
+        else if (feedDownSince == 0) feedDownSince = block.timestamp;
     }
 
     function claim() external nonReentrant returns (uint256 amount) {
@@ -302,6 +368,12 @@ contract TorqueMarket is ITorqueMarket, IUniswapV3SwapCallback, ReentrancyGuard 
     }
 
     // ------------------------------------------------------------------ internals
+
+    function _clearFeedDownIfHealthy() internal {
+        if (feedDownSince == 0) return;
+        (uint256 price6,) = _readFeed();
+        if (price6 > 0) feedDownSince = 0;
+    }
 
     /// @dev Both safety checks: a fresh feed, and agreement with the pool's 30-minute average.
     function _checkedPrice() internal view returns (uint256 price6) {

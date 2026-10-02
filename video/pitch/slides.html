@@ -72,12 +72,13 @@ h2 { font: 700 72px/1.08 "Space Grotesk"; letter-spacing: -0.015em; margin-botto
 </section>
 
 <section class="slide" data-id="evidence">
-  <h2>Invariants first, then the product</h2>
+  <h2>Invariants first. Then an attacker's pass.</h2>
   <div class="stats">
     <div class="stat"><div class="n">9/9</div><div class="l">solvency invariants, ~131k calls each</div></div>
-    <div class="stat"><div class="n">32 + 5</div><div class="l">unit tests + tests against live mainnet state</div></div>
-    <div class="stat"><div class="n accent">18/18</div><div class="l">deliberately planted bugs caught</div></div>
+    <div class="stat"><div class="n">23</div><div class="l">attacks tried on the contracts, plus a real-pool sandwich: all held</div></div>
+    <div class="stat"><div class="n accent">24/24</div><div class="l">planted bugs that change behaviour, caught</div></div>
   </div>
+  <p class="lead" style="margin-top:44px;font-size:30px">Found and fixed before mainnet: a dead price feed could have locked LP funds.</p>
 </section>
 
 <section class="slide" data-id="usdg">

@@ -60,12 +60,12 @@ contract TorqueVault is ERC4626, ITorqueVault {
     }
 
     function maxWithdraw(address owner) public view override returns (uint256) {
-        if (!_fresh()) return 0;
+        if (!_exitOpen()) return 0;
         return Math.min(_convertToAssets(balanceOf(owner), Math.Rounding.Floor), idle());
     }
 
     function maxRedeem(address owner) public view override returns (uint256) {
-        if (!_fresh()) return 0;
+        if (!_exitOpen()) return 0;
         return Math.min(balanceOf(owner), _convertToShares(idle(), Math.Rounding.Floor));
     }
 
@@ -80,12 +80,12 @@ contract TorqueVault is ERC4626, ITorqueVault {
     }
 
     function withdraw(uint256 assets, address receiver, address owner) public override returns (uint256) {
-        _requireFresh();
+        if (!_exitOpen()) revert PriceCheckFailed();
         return super.withdraw(assets, receiver, owner);
     }
 
     function redeem(uint256 shares, address receiver, address owner) public override returns (uint256) {
-        _requireFresh();
+        if (!_exitOpen()) revert PriceCheckFailed();
         return super.redeem(shares, receiver, owner);
     }
 
@@ -102,6 +102,13 @@ contract TorqueVault is ERC4626, ITorqueVault {
 
     function _fresh() internal view returns (bool) {
         return market != address(0) && ITorqueMarket(market).isPriceOk();
+    }
+
+    /// @dev Withdrawals need both price checks while loans are open (NAV depends on a price). With no
+    ///      open positions NAV is exactly idle cash, so LPs can always leave, even if the feed is dead.
+    function _exitOpen() internal view returns (bool) {
+        if (market == address(0) || ITorqueMarket(market).openPositionCount() == 0) return true;
+        return ITorqueMarket(market).isPriceOk();
     }
 
     function _requireFresh() internal view {

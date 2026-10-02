@@ -45,6 +45,7 @@ interface ITorqueMarket {
     function financingLevelOf(uint256 id) external view returns (uint256);
     function getPosition(uint256 id) external view returns (Position memory);
     function openPositionIds() external view returns (uint256[] memory);
+    function openPositionCount() external view returns (uint256);
     function totalPrincipal() external view returns (uint256);
     function totalNotional() external view returns (uint256);
     function totalBadDebt() external view returns (uint256);

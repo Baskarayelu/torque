@@ -11,9 +11,9 @@ import {IAggregatorV3, IUniswapV3PoolMinimal} from "../src/interfaces/IExternal.
 ///
 ///   Dry run (no broadcast):
 ///     forge script script/Deploy.s.sol --rpc-url $RH_RPC_URL --account <keystore>
-///   Broadcast + verify on Sourcify:
-///     forge script script/Deploy.s.sol --rpc-url $RH_RPC_URL --account <keystore> --broadcast \
-///       --verify --verifier sourcify --chain 4663
+///   Broadcast, seed the vault with 15 USDG (the demo adds the last 5 on camera), verify on Sourcify:
+///     SEED_USDG=15000000 forge script script/Deploy.s.sol --rpc-url $RH_RPC_URL --account <keystore> \
+///       --sender <deployer address> --broadcast --verify --verifier sourcify --chain 4663
 contract Deploy is Script {
     IERC20 constant USDG = IERC20(0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168);
     IERC20 constant NVDA = IERC20(0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC);
@@ -23,15 +23,23 @@ contract Deploy is Script {
     function run() external returns (TorqueVault vault, TorqueMarket market) {
         require(block.chainid == 4663, "Robinhood Chain mainnet only");
 
+        // SEED_USDG (6 decimals, e.g. 15000000): seed the LP vault in the same run, so nobody can be the
+        // first depositor between deployment and seeding. Needs both price checks to pass (weekday session).
+        uint256 seed = vm.envOr("SEED_USDG", uint256(0));
         vm.startBroadcast();
         vault = new TorqueVault(USDG);
         market = new TorqueMarket(USDG, NVDA, POOL, FEED, vault);
         vault.setMarket(address(market));
+        if (seed > 0) {
+            USDG.approve(address(vault), seed);
+            vault.deposit(seed, msg.sender);
+        }
         vm.stopBroadcast();
 
         require(vault.market() == address(market), "wiring");
         (uint256 p6, bool fresh) = market.oraclePrice();
 
+        console.log("Vault totalAssets (USDG 6dp):", vault.totalAssets());
         console.log("TorqueVault ", address(vault));
         console.log("TorqueMarket", address(market));
         console.log("NVDA (Chainlink, 6dp):", p6, fresh ? "fresh" : "STALE");

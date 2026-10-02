@@ -26,6 +26,11 @@ contract MockFeed is IAggregatorV3 {
     int256 public answer;
     uint256 public updatedAt;
     uint80 public roundId;
+    bool public dead;
+
+    function kill(bool d) external {
+        dead = d;
+    }
 
     function decimals() external pure returns (uint8) {
         return 8;
@@ -44,6 +49,7 @@ contract MockFeed is IAggregatorV3 {
     }
 
     function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80) {
+        require(!dead, "feed deprecated");
         return (roundId, answer, updatedAt, updatedAt, roundId);
     }
 }
@@ -177,5 +183,27 @@ contract MockPool {
             IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(amount0, amount1, data);
             require(nvda.balanceOf(address(this)) >= before + amtIn, "IIA");
         }
+    }
+}
+
+interface ITransferHook {
+    function onTokenTransfer(address from, address to, uint256 amount) external;
+}
+
+/// @notice Worst-case token for reentrancy tests: after every transfer it calls back into the sender and
+///         the recipient if they opted in (ERC-777-style hooks). Real USDG and NVDA have no hooks.
+contract HookToken is MockToken {
+    mapping(address => bool) public hooked;
+
+    constructor(string memory n, string memory s, uint8 d) MockToken(n, s, d) {}
+
+    function setHook(address a, bool on) external {
+        hooked[a] = on;
+    }
+
+    function _update(address from, address to, uint256 value) internal override {
+        super._update(from, to, value);
+        if (from != address(0) && hooked[from]) ITransferHook(from).onTokenTransfer(from, to, value);
+        if (to != address(0) && hooked[to]) ITransferHook(to).onTokenTransfer(from, to, value);
     }
 }

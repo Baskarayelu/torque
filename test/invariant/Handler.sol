@@ -266,7 +266,7 @@ contract Handler is Test {
     function withdraw(uint256 actor, uint256 amount) external {
         address lp = lps[actor % lps.length];
         amount = bound(amount, 1, 25e6);
-        bool fresh = !_mustRefuse();
+        bool fresh = !_mustRefuse() || market.openPositionCount() == 0; // no loans: exits need no price
         uint256 before = usdg.balanceOf(lp);
         vm.prank(lp);
         try vault.withdraw(amount, lp, lp) {
@@ -281,7 +281,7 @@ contract Handler is Test {
     function redeem(uint256 actor, uint256 shares) external {
         address lp = lps[actor % lps.length];
         shares = bound(shares, 1, vault.balanceOf(lp) + 1);
-        bool fresh = !_mustRefuse();
+        bool fresh = !_mustRefuse() || market.openPositionCount() == 0; // no loans: exits need no price
         uint256 before = usdg.balanceOf(lp);
         vm.prank(lp);
         try vault.redeem(shares, lp, lp) {

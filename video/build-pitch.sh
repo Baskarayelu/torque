@@ -23,13 +23,24 @@ const steps = JSON.parse(fs.readFileSync(here + "/pitch-narration.json"));
   await b.close();
 })();
 JS
-python3 - "$HERE/pitch-narration.json" "$OUT" "$VOICE" <<'PY'
-import json, subprocess, sys
+if [ -n "${NARRATION_MP3:-}" ]; then
+  python3 "$HERE/split_narration.py" "$HERE/pitch-narration.json" "$NARRATION_MP3" "$OUT" p
+else
+  python3 - "$HERE/pitch-narration.json" "$OUT" "$VOICE" <<'PY'
+import json, re, subprocess, sys
 steps=json.load(open(sys.argv[1])); out=sys.argv[2]; voice=sys.argv[3]
-parts=[]
 for s in steps:
     aiff=f"{out}/p_{s['id']}.aiff"
-    subprocess.run(["say","-v",voice,"-r","178","-o",aiff,s["text"]],check=True)
+    subprocess.run(["say","-v",voice,"-r","178","-o",aiff,re.sub(r"\[[^\]]*\]","",s["text"])],check=True)
+    subprocess.run(["ffmpeg","-y","-i",aiff,f"{out}/p_{s['id']}.wav"],check=True,capture_output=True)
+PY
+fi
+python3 - "$HERE/pitch-narration.json" "$OUT" <<'PY'
+import json, subprocess, sys
+steps=json.load(open(sys.argv[1])); out=sys.argv[2]
+parts=[]
+for s in steps:
+    aiff=f"{out}/p_{s['id']}.wav"
     dur=float(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",aiff]).decode())
     clip=f"{out}/c_{s['id']}.mp4"
     total=dur+1.0

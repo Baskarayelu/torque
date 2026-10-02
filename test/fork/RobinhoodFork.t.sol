@@ -136,6 +136,39 @@ contract RobinhoodForkTest is Test {
         assertEq(NVDA.balanceOf(address(market)), 0);
     }
 
+    /// Adversarial: sandwich a victim's open on the real pool. The attacker buys NVDA first, the victim's
+    /// hedge buys after, the attacker sells back. Pool fees on the attacker's size dwarf what a 1%-bounded
+    /// fill on a ~$10 hedge can give up, and big front-runs make the victim's open revert instead.
+    function test_fork_sandwichOpenIsUnprofitable() public {
+        _requireFreshFeed();
+        vm.prank(lp);
+        vault.deposit(20e6, lp);
+        Swapper sw = new Swapper(POOL, USDG, NVDA);
+        uint256[3] memory sizes = [uint256(1_000e6), 10_000e6, 100_000e6];
+        for (uint256 i; i < sizes.length; i++) {
+            uint256 snap = vm.snapshotState();
+            vm.prank(USDG_WHALE);
+            USDG.transfer(address(sw), sizes[i]);
+            uint256 nvdaGot = sw.buyNvda(sizes[i]);
+            vm.prank(alice);
+            try market.open(2e6, 50_000, 0) returns (uint256 id) {
+                ITorqueMarket.Position memory p = market.getPosition(id);
+                (uint256 p6,) = market.oraclePrice();
+                uint256 fill = uint256(p.notional) * 1e18 / p.q;
+                uint256 back = sw.sellNvda(nvdaGot);
+                int256 pnl = int256(back) - int256(sizes[i]);
+                console.log("front-run USDG", sizes[i] / 1e6);
+                console.log("  victim fill vs Chainlink, bps over:", (fill * 10_000 / p6) - 10_000);
+                console.logInt(pnl);
+                assertLt(pnl, 0, "sandwich loses money");
+            } catch (bytes memory err) {
+                console.log("front-run USDG", sizes[i] / 1e6, "-> victim open reverted (fill guard)");
+                assertEq(bytes4(err), ITorqueMarket.Slippage.selector);
+            }
+            vm.revertToState(snap);
+        }
+    }
+
     function test_fork_staleFeedShutsTheProduct() public {
         _requireFreshFeed();
         vm.prank(lp);
@@ -148,7 +181,8 @@ contract RobinhoodForkTest is Test {
         vm.expectRevert(ITorqueMarket.StaleFeed.selector);
         market.open(2e6, 50_000, 0);
         assertEq(vault.maxDeposit(lp), 0);
-        assertEq(vault.maxWithdraw(lp), 0);
+        // no loans open: NAV is idle cash, so LPs can still leave on a stale feed
+        assertEq(vault.maxWithdraw(lp), 10e6);
     }
 }
 
@@ -169,5 +203,36 @@ contract TickProbe is TorqueMarket {
 
     function price(int24 tick) external view returns (uint256) {
         return _tickToPrice6(tick);
+    }
+}
+
+/// Minimal direct-pool swapper for the sandwich test.
+contract Swapper {
+    IUniswapV3PoolMinimal immutable pool;
+    IERC20 immutable usdg;
+    IERC20 immutable nvda;
+
+    constructor(IUniswapV3PoolMinimal p, IERC20 u, IERC20 n) {
+        pool = p;
+        usdg = u;
+        nvda = n;
+    }
+
+    function buyNvda(uint256 usdgIn) external returns (uint256) {
+        (, int256 a1) = pool.swap(address(this), true, int256(usdgIn), 4_295_128_740, "");
+        return uint256(-a1);
+    }
+
+    function sellNvda(uint256 nvdaIn) external returns (uint256) {
+        (int256 a0,) = pool.swap(
+            address(this), false, int256(nvdaIn), 1_461_446_703_485_210_103_287_273_052_203_988_822_378_723_970_341, ""
+        );
+        return uint256(-a0);
+    }
+
+    function uniswapV3SwapCallback(int256 a0, int256 a1, bytes calldata) external {
+        require(msg.sender == address(pool));
+        if (a0 > 0) usdg.transfer(msg.sender, uint256(a0));
+        if (a1 > 0) nvda.transfer(msg.sender, uint256(a1));
     }
 }

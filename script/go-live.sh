@@ -123,7 +123,11 @@ else
   git -C "$LANDING" add config.json && git -C "$LANDING" commit -q -m "Point the landing page at the mainnet deployment" && git -C "$LANDING" push -q origin main
   ok "committed and pushed both repos"
   (cd "$ROOT/app" && npx --yes vercel@latest deploy --prod --yes > "$RUN/vercel-dashboard.log" 2>&1) || die "dashboard deploy failed"
-  (cd "$LANDING" && npx --yes vercel@latest deploy --prod --yes > "$RUN/vercel-landing.log" 2>&1) || die "landing deploy failed"
+  # Vercel Hobby blocks deploys that carry a private repo's commit author; deploy the landing from a git-less export of main
+  EXP="$RUN/landing-export"; mkdir -p "$EXP/.vercel" && git -C "$LANDING" archive HEAD | tar -x -C "$EXP" && cp "$LANDING/.vercel/project.json" "$EXP/.vercel/" && rm -rf "$EXP/social" "$EXP/docs"
+  (cd "$EXP" && npx --yes vercel@latest deploy --prod --yes > "$RUN/vercel-landing.log" 2>&1) || die "landing deploy failed"
+  LAND=$(python3 -c "import json;print(json.load(open('deployment.json'))['landing'])")
+  curl -s "$LAND/" | grep -q "Live on Robinhood Chain mainnet" || die "landing is not showing the mainnet status"
   DASH=$(python3 -c "import json;print(json.load(open('deployment.json'))['dashboard'])")
   curl -s "$DASH/config.json" | grep -qi "$MARKET" || die "dashboard is not serving the new config"; ok "dashboard and landing redeployed"
 fi

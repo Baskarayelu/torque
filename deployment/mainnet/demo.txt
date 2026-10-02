@@ -1,11 +1,11 @@
 ## hero
-[thoughtful] Robinhood Chain holds almost seven hundred million dollars of U.S.D.G. [pause] But only about one point two million dollars of it is lent against stock tokens... and almost all of that is already borrowed. [intrigued] The demand for leverage on stocks is there. The dollars to fund it are not. [pause] This is Torque.
+[thoughtful] Robinhood Chain holds about seven hundred million dollars of U.S.D.G. [pause] But only about one point two million dollars of it is lent against stock tokens... and almost all of that is already borrowed. [intrigued] The demand for leverage on stocks is there. The dollars to fund it are not. [pause] This is Torque.
 
 ## checks
-[content] Before Torque does anything, it runs two safety checks. [pause] Chainlink's Nvidia price has to be fresh... and the Nvidia pool's own thirty-minute average has to agree with it, within one and a half percent. [pause] Right now, both pass. The market is open.
+[content] Before Torque does anything, it runs two safety checks. [pause] Chainlink's Nvidia price has to be fresh... and the Nvidia pool's own thirty-minute average has to agree with it, within one and a half percent. [pause] Right now, both pass.
 
 ## lp
-[content] First, liquidity. [pause] I connect a wallet and add the last five dollars of U.S.D.G. to the vault. [pause] That fills it to its twenty-dollar cap... and the contract refuses anything more.
+[content] First, liquidity. [pause] The vault already holds twenty dollars of U.S.D.G.... its hard cap for the buildathon. [pause] I try to add one cent more... and the contract refuses it.
 
 ## quote
 [thoughtful] Now, a trade. [pause] Two dollars of margin, at five times leverage, buys about ten dollars of real Nvidia. The vault lends the rest. [pause] The quote shows the price where the position is worth zero... and the knock-out level, five percent above it. [slowly] The most I can lose is my two dollars.

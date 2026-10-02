@@ -1,15 +1,15 @@
 [
  {
   "id": "hero",
-  "text": "[thoughtful] Robinhood Chain holds almost seven hundred million dollars of U.S.D.G. [pause] But only about one point two million dollars of it is lent against stock tokens... and almost all of that is already borrowed. [intrigued] The demand for leverage on stocks is there. The dollars to fund it are not. [pause] This is Torque."
+  "text": "[thoughtful] Robinhood Chain holds about seven hundred million dollars of U.S.D.G. [pause] But only about one point two million dollars of it is lent against stock tokens... and almost all of that is already borrowed. [intrigued] The demand for leverage on stocks is there. The dollars to fund it are not. [pause] This is Torque."
  },
  {
   "id": "checks",
-  "text": "[content] Before Torque does anything, it runs two safety checks. [pause] Chainlink's Nvidia price has to be fresh... and the Nvidia pool's own thirty-minute average has to agree with it, within one and a half percent. [pause] Right now, both pass. The market is open."
+  "text": "[content] Before Torque does anything, it runs two safety checks. [pause] Chainlink's Nvidia price has to be fresh... and the Nvidia pool's own thirty-minute average has to agree with it, within one and a half percent. [pause] Right now, both pass."
  },
  {
   "id": "lp",
-  "text": "[content] First, liquidity. [pause] I connect a wallet and add the last five dollars of U.S.D.G. to the vault. [pause] That fills it to its twenty-dollar cap... and the contract refuses anything more."
+  "text": "[content] First, liquidity. [pause] The vault already holds twenty dollars of U.S.D.G.... its hard cap for the buildathon. [pause] I try to add one cent more... and the contract refuses it."
  },
  {
   "id": "quote",

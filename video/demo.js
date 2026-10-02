@@ -81,10 +81,16 @@ const MARKET_ABI = ["function openPositionIds() view returns (uint256[])", "func
       run: async () => { await wait(2500); await page.mouse.wheel(0, 380); } },
     checks: { cap: "Two safety checks: fresh Chainlink price, and the pool's 30-minute average agrees within 1.5%",
       run: async () => { await page.goto(DASH_URL, { waitUntil: "load" }); await page.waitForFunction(() => /\$\d/.test(document.querySelector(".pill, .topbar-status")?.textContent || ""), null, { timeout: 60000 }); await connect(); await page.locator(".topbar-status").hover(); } },
-    lp: { cap: "LP vault: fill it to its $20 cap. The contract refuses anything more.",
+    lp: { cap: fork ? "LP vault: fill it to its $20 cap. The contract refuses anything more." : "LP vault at its $20 cap. One cent more is refused by the contract.",
       run: async () => {
         await scrollTo("#vault"); await wait(700);
         const room = await new ethers.Contract(cfg.VAULT, VAULT_ABI, provider).maxDeposit(wallet.address);
+        if (room === 0n) { // vault already at its cap (mainnet: filled before filming): show the refusal only
+          await page.fill("#lp-amt", "0.01"); await wait(400); await page.click("#vault .btn-accent");
+          await page.waitForFunction(() => /Not sent/.test(document.querySelector("#vault .card:nth-child(2) p.muted.small").textContent), null, { timeout: 60000 });
+          console.log("refusal:", await page.textContent("#vault .card:nth-child(2) p.muted.small"));
+          await wait(2500); return;
+        }
         const loans = (await new ethers.Contract(cfg.MARKET, MARKET_ABI, provider).openPositionIds()).length;
         const amt = Number(loans ? room - 1000n : room) / 1e6; // with loans open, interest accrues every block: leave 0.001
         await page.fill("#lp-amt", amt.toFixed(6)); await wait(500);

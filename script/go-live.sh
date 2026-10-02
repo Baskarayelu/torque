@@ -32,6 +32,11 @@ phase "1/7 Preflight"
 for t in forge cast python3 node npx curl git; do command -v $t >/dev/null || die "missing tool: $t"; done; ok "tools"
 [ "$(cast chain-id --rpc-url "$RH_RPC_URL")" = 4663 ] || die "RPC is not Robinhood Chain mainnet (4663)"; ok "RPC is chain 4663"
 DEPLOYER=$(cast wallet address --keystore "$KEYSTORE" --password-file "$PASS") || die "keystore did not decrypt"; ok "deployer $DEPLOYER"
+# Deploy.s.sol creates the vault at nonce 0 and the market at nonce 1; a fresh deployer makes the addresses predictable
+NONCE=$(cast nonce "$DEPLOYER" --rpc-url "$RH_RPC_URL")
+[ -n "$REHEARSAL" ] || [ "$NONCE" = 0 ] || die "deployer nonce is $NONCE, expected 0 (a fresh deployer)"
+PRED_VAULT=$(cast compute-address "$DEPLOYER" --nonce "$NONCE" | awk '{print $NF}'); PRED_MARKET=$(cast compute-address "$DEPLOYER" --nonce $((NONCE + 1)) | awk '{print $NF}')
+ok "nonce $NONCE; predicted TorqueVault $PRED_VAULT, TorqueMarket $PRED_MARKET"
 if [ -z "$REHEARSAL" ]; then
   for r in "$ROOT" "$LANDING"; do
     [ -z "$(git -C "$r" status --porcelain)" ] || die "$(basename "$r") has uncommitted changes"
@@ -89,6 +94,7 @@ seed = next(t["hash"] for t in txs if (t.get("function") or "").startswith("depo
 print(seed, min(int(r["blockNumber"], 16) for r in rec))
 PY
 )"
+[ "$VAULT" = "$PRED_VAULT" ] && [ "$MARKET" = "$PRED_MARKET" ] || die "deployed addresses differ from the prediction ($PRED_VAULT, $PRED_MARKET)"
 [ "$(cast call "$VAULT" 'market()(address)' --rpc-url "$RH_RPC_URL")" = "$MARKET" ] || die "vault is not wired to the market"
 [ "$(cast call "$VAULT" 'totalAssets()(uint256)' --rpc-url "$RH_RPC_URL" | awk '{print $1}')" = "$SEED_USDG" ] || die "vault was not seeded"
 ok "TorqueMarket $MARKET"; ok "TorqueVault  $VAULT, seeded with $(python3 -c "print($SEED_USDG/1e6)") USDG (tx $SEEDTX), block $BLOCK"

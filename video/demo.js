@@ -29,7 +29,7 @@ const MARKET_ABI = ["function openPositionIds() view returns (uint256[])", "func
       case "wallet_switchEthereumChain": case "wallet_addEthereumChain": return null;
       case "eth_sendTransaction": {
         const t = params[0];
-        const tx = await wallet.sendTransaction({ to: t.to, data: t.data, value: t.value ? BigInt(t.value) : 0n });
+        const tx = await wallet.sendTransaction({ to: t.to, data: t.data, value: t.value ? BigInt(t.value) : 0n, ...(t.gas ? { gasLimit: BigInt(t.gas) } : {}) });
         console.log("tx", tx.hash);
         return tx.hash;
       }
@@ -91,6 +91,8 @@ const MARKET_ABI = ["function openPositionIds() view returns (uint256[])", "func
         await page.click("#vault .btn-accent"); await confirmed("#vault p.muted.small"); await wait(1500);
         await page.fill("#lp-amt", "0.01"); await wait(400); await page.click("#vault .btn-accent");
         await page.waitForFunction(() => /Not sent/.test(document.querySelector("#vault .card:nth-child(2) p.muted.small").textContent), null, { timeout: 60000 });
+        console.log("refusal:", await page.textContent("#vault .card:nth-child(2) p.muted.small"));
+        await wait(2500); // hold on the refusal
       } },
     quote: { cap: "$2 margin at 5×: about $10 of real NVDA. Most you can lose: $2.",
       run: async () => { await scrollTo("#open"); await wait(700); await page.fill("#margin", "2"); await page.click("#open .seg button:nth-child(4)"); await wait(500); await page.locator("#open .kv").hover(); } },

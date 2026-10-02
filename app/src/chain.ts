@@ -48,6 +48,18 @@ const ERRORS = [
   "error ERC4626ExceededMaxDeposit(address receiver, uint256 assets, uint256 max)",
   "error ERC4626ExceededMaxWithdraw(address owner, uint256 assets, uint256 max)",
 ];
+/** Names a custom error from raw revert data; ethers only decodes reverts for static calls, not for sends. */
+const errorIface = new Interface(ERRORS);
+export function revertName(e: { revert?: { name?: string }; data?: unknown; info?: { error?: { data?: unknown } } }): string | undefined {
+  if (e.revert?.name) return e.revert.name;
+  const data = e.data ?? e.info?.error?.data;
+  if (typeof data !== "string" || data.length < 10) return undefined;
+  try {
+    return errorIface.parseError(data)?.name;
+  } catch {
+    return undefined;
+  }
+}
 export const REASONS: Record<string, string> = {
   StaleFeed: "Chainlink has not printed in 12 hours.",
   PoolPriceMismatch: "the pool has moved more than 1.5% from the Chainlink price.",
@@ -271,10 +283,23 @@ export async function connectWallet(cfg: Config): Promise<{ signer: Signer; acco
   return { signer, account: await signer.getAddress() };
 }
 
+// Every write sends with 30% gas headroom: the estimate runs in the current block, but the transaction lands in a later
+// one, where interest accrual writes storage and costs more. With an exact estimate, a deposit can run out of gas.
+function withGasHeadroom(c: Contract): Contract {
+  return new Proxy(c, {
+    get(target, prop, receiver) {
+      const f = Reflect.get(target, prop, receiver);
+      if (typeof f !== "function" || typeof (f as { estimateGas?: unknown }).estimateGas !== "function") return f;
+      const m = f as ((...a: unknown[]) => Promise<unknown>) & { estimateGas: (...a: unknown[]) => Promise<bigint> };
+      return async (...args: unknown[]) => m(...args, { gasLimit: ((await m.estimateGas(...args)) * 13n) / 10n });
+    },
+  });
+}
+
 export function writers(cfg: Config, signer: Signer) {
-  const market = new Contract(cfg.MARKET!, ABI.market, signer);
-  const vault = new Contract(cfg.VAULT!, ABI.vault, signer);
-  const usdg = new Contract(cfg.USDG, ABI.erc20, signer);
+  const market = withGasHeadroom(new Contract(cfg.MARKET!, ABI.market, signer));
+  const vault = withGasHeadroom(new Contract(cfg.VAULT!, ABI.vault, signer));
+  const usdg = withGasHeadroom(new Contract(cfg.USDG, ABI.erc20, signer));
   const ensure = async (spender: string, amount: bigint) => {
     const owner = await signer.getAddress();
     if ((await usdg.allowance(owner, spender)) < amount) await (await usdg.approve(spender, amount)).wait();

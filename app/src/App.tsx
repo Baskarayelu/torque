@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseUnits, type Signer } from "ethers";
-import { connectWallet, isDeployed, makeReader, P, payoffAt, quote, REASONS, writers, type Config, type Position, type Snapshot } from "./chain";
+import { connectWallet, isDeployed, makeReader, P, payoffAt, quote, REASONS, revertName, writers, type Config, type Position, type Snapshot } from "./chain";
 
 const DASH = "—";
 const usd = (x: number | null | undefined, d = 2) =>
@@ -90,8 +90,9 @@ export default function App({ cfg }: { cfg: Config }) {
       setMsg((m) => ({ ...m, [key]: `Confirmed ${tx.hash.slice(0, 10)}…` }));
       refresh();
     } catch (e) {
-      const err = e as { shortMessage?: string; reason?: string; message?: string; revert?: { name?: string } };
-      const why = (err.revert?.name && REASONS[err.revert.name]) || err.shortMessage || err.reason || err.message;
+      const err = e as { shortMessage?: string; reason?: string; message?: string; revert?: { name?: string }; data?: unknown };
+      const name = revertName(err);
+      const why = (name && REASONS[name]) || err.shortMessage || err.reason || err.message;
       setMsg((m) => ({ ...m, [key]: "Not sent: " + why }));
     }
   };

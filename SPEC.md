@@ -117,7 +117,7 @@ A fresh position takes on no bad debt unless the Monday price is below `F / (1 �
 
 | Parameter | Value | Why |
 |---|---|---|
-| `VAULT_CAP` | **20 USDG** | **"LP vault capped at $20 USDG for the buildathon."** This is a real mainnet deployment with real USDG, which is the point: testnet has no real Chainlink stock feeds and no stock pools, so a testnet version would prove nothing. Checked in `maxDeposit`/`maxMint` and again in `_deposit` |
+| `VAULT_CAP` | **20 USDG** | **"LP vault capped at $20 USDG for the buildathon."** TORQUE deploys to mainnet with real USDG, which is the point: testnet has no real Chainlink stock feeds and no stock pools, so a testnet version would prove nothing. Checked in `maxDeposit`/`maxMint` and again in `_deposit` |
 | `MAX_UTILIZATION_BPS` | 80% | total borrow ≤ 80% of vault assets, so the $20 vault lends at most $16: two $2 positions at 5× (each borrows $7.96 for $9.95 of NVDA), four $1 positions at 5×, or about $15 of margin at 2× |
 | `MAX_OPEN_NOTIONAL` | 30 USDG | hard cap on open interest, 1.5× the vault. The NVDA hedge is at most ~0.13 NVDA, against a pool holding ~3,690 |
 | `MAX_OPEN_POSITIONS` | 32 | bounds the valuation loop. With the caps above, at most 15 positions can exist (minimum notional is ~$2), so this is a backstop |

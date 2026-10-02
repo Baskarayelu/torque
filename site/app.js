@@ -181,7 +181,10 @@
     $("open-why").textContent = why;
     $("dep-btn").disabled = $("wd-btn").disabled = Boolean(why);
     $("lp-why").textContent = why;
-    $("deploy-note").textContent = deployed ? "" : "Contracts deploying now; addresses will appear below.";
+    $("deploy-note").textContent = deployed
+      ? "Real mainnet deployment, real USDG. Testnet has no real stock feeds or stock pools, so a testnet version would prove nothing."
+      : "Mainnet deployment in progress; contract addresses will appear below.";
+    $("eyebrow").textContent = deployed ? "Live on Robinhood Chain mainnet · settled in USDG" : "Built for Robinhood Chain mainnet · settled in USDG";
   }
 
   // ------------------------------------------------------------- wallet

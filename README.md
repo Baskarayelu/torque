@@ -12,7 +12,7 @@ People want leverage on stock tokens, but the dollars to fund it are not there. 
 
 > Pick NVDA, choose 2–5× leverage and pay in USDG. The most you can ever lose is what you put in. There are no margin calls, and every position is backed by real NVDA bought from the on-chain pool and protected by Chainlink's NVDA price.
 
-**LP vault capped at $20 USDG for the buildathon.** This is a real mainnet deployment with real USDG, which is the point. Robinhood testnet has no real Chainlink stock feeds and no stock pools, so a testnet version would prove nothing. At $20 the vault can lend up to $16: two $2 positions at 5× (about $10 of NVDA each), or four $1 positions at 5×.
+**LP vault capped at $20 USDG for the buildathon.** TORQUE is built for Robinhood Chain mainnet with real USDG, which is the point. Robinhood testnet has no real Chainlink stock feeds and no stock pools, so a testnet version would prove nothing. At $20 the vault can lend up to $16: two $2 positions at 5× (about $10 of NVDA each), or four $1 positions at 5×.
 
 ---
 

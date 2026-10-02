@@ -8,7 +8,7 @@ html, body { width: 1920px; height: 1080px; background: var(--bg); color: var(--
 .slide { display: none; position: absolute; inset: 0; padding: 120px 140px; flex-direction: column; justify-content: center; }
 .slide.on { display: flex; }
 .brand { position: absolute; top: 64px; left: 140px; font: 700 26px "Space Grotesk"; letter-spacing: .1em; display: flex; gap: 14px; align-items: center; }
-.mark { width: 26px; height: 26px; border-radius: 50%; border: 5px solid var(--accent); border-right-color: transparent; transform: rotate(-30deg); }
+.mark { width: 30px; height: 30px; color: var(--accent); }
 .foot { position: absolute; bottom: 60px; left: 140px; right: 140px; display: flex; justify-content: space-between; color: var(--ink2); font-size: 22px; }
 h1 { font: 700 104px/1.04 "Space Grotesk"; letter-spacing: -0.02em; }
 h2 { font: 700 72px/1.08 "Space Grotesk"; letter-spacing: -0.015em; margin-bottom: 40px; }
@@ -30,7 +30,7 @@ h2 { font: 700 72px/1.08 "Space Grotesk"; letter-spacing: -0.015em; margin-botto
 .mono { font-family: "JetBrains Mono"; font-size: 26px; color: var(--ink2); line-height: 1.7; }
 </style></head>
 <body>
-<div class="brand"><span class="mark"></span>TORQUE</div>
+<div class="brand"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M62 32 L47 57.98 L17 57.98 L2 32 L17 6.02 L47 6.02 Z M28.8 10.5 L35.2 10.5 L35.2 19.92 A12.5 12.5 0 1 1 28.8 19.92 Z"/></svg>TORQUE</div>
 
 <section class="slide" data-id="title">
   <h1>Knock-out leverage<br>on <span class="accent">NVDA</span>, settled in <span class="accent">USDG</span>.</h1>
@@ -40,8 +40,8 @@ h2 { font: 700 72px/1.08 "Space Grotesk"; letter-spacing: -0.015em; margin-botto
 <section class="slide" data-id="problem">
   <h2>The dollars are here. The leverage isn't.</h2>
   <div class="stats">
-    <div class="stat"><div class="n">$690M</div><div class="l">of Paxos USDG on Robinhood Chain</div></div>
-    <div class="stat"><div class="n accent">$1.24M</div><div class="l">lent against stock tokens (171 Morpho markets)</div></div>
+    <div class="stat"><div class="n">$700M</div><div class="l">of Paxos USDG on Robinhood Chain</div></div>
+    <div class="stat"><div class="n accent">$1.24M</div><div class="l">lent against stock tokens (167 Morpho markets)</div></div>
     <div class="stat"><div class="n accent">98%</div><div class="l">of it already borrowed. NVDA market: 100%</div></div>
   </div>
   <p class="lead" style="margin-top:44px;font-size:30px">Read from Robinhood Chain mainnet, 2026-10-02. Reproducible scan in the repo.</p>
@@ -78,7 +78,7 @@ h2 { font: 700 72px/1.08 "Space Grotesk"; letter-spacing: -0.015em; margin-botto
     <div class="stat"><div class="n">23</div><div class="l">attacks tried on the contracts, plus a real-pool sandwich: all held</div></div>
     <div class="stat"><div class="n accent">24/24</div><div class="l">planted bugs that change behaviour, caught</div></div>
   </div>
-  <p class="lead" style="margin-top:44px;font-size:30px">Found and fixed before mainnet: a dead price feed could have locked LP funds.</p>
+  <p class="lead" style="margin-top:44px;font-size:30px">Found and fixed: a dead price feed could have locked LP funds.</p>
 </section>
 
 <section class="slide" data-id="usdg">
@@ -113,10 +113,14 @@ const slides = [...document.querySelectorAll(".slide")];
 const i = Math.max(0, slides.findIndex(s => s.dataset.id === q.get("s")));
 slides[i].classList.add("on");
 document.getElementById("pg").textContent = `${i + 1} / ${slides.length}`;
-if (q.get("market")) {
+if (q.get("status") === "mainnet" && q.get("market")) {
   document.getElementById("addrs").innerHTML = `Robinhood Chain: ${q.get("market")} — TorqueMarket<br>Robinhood Chain: ${q.get("vault")} — TorqueVault (USDG LP)`;
 } else {
-  document.getElementById("addrs").textContent = "Deploying to Robinhood Chain mainnet (chain 4663)";
+  // fork-only: say plainly where it runs
+  document.getElementById("status-title").innerHTML = 'Built and tested against Robinhood Chain mainnet.<br><span class="accent">Not deployed. Rehearsed on a fork of mainnet.</span>';
+  document.querySelector('[data-id="status"] .lead').textContent = "Real USDG, NVDA, pool and Chainlink feed, forked locally: the same deploy script, the dashboard and real transactions. Testnet has no real stock feeds or stock pools, so it would prove nothing.";
+  document.getElementById("addrs").textContent = "Fork rehearsal log: github.com/Torque-Protocol/torque · research/fork-rehearsal-2026-10-02.log";
+  document.querySelector('[data-id="status"] .lead:last-of-type').textContent = "Next: mainnet · shorts · more stocks";
 }
 </script>
 </body></html>

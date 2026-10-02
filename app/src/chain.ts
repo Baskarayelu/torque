@@ -2,6 +2,8 @@ import { BrowserProvider, Contract, Interface, JsonRpcProvider, type Signer } fr
 
 export type Config = {
   environment: "mainnet" | "fork-rehearsal";
+  /** Written by script/apply-deployment.py from deployment.json. */
+  deployment: "fork-only" | "mainnet";
   chainId: number;
   chainName: string;
   rpc: string;
@@ -21,7 +23,8 @@ export async function loadConfig(): Promise<Config> {
   return res.json();
 }
 
-export const isDeployed = (c: Config) => Boolean(c.MARKET && c.VAULT);
+// Production shows TORQUE values only when deployment.json says mainnet; a local fork build always has its own addresses.
+export const isDeployed = (c: Config) => Boolean(c.MARKET && c.VAULT) && (c.environment === "fork-rehearsal" || c.deployment === "mainnet");
 
 // Contract parameters (TorqueMarket / TorqueVault constants). Used for quotes and labels only.
 export const P = {
@@ -35,6 +38,34 @@ export const P = {
   TWAP_WINDOW: 1800,
   MAX_POOL_DEVIATION_BPS: 150,
   MIN_MARGIN: 1,
+};
+
+// TORQUE's custom errors, so a refused transaction says why. Plain-language reasons for each.
+const ERRORS = [
+  "error StaleFeed()", "error PoolPriceMismatch()", "error BadLeverage()", "error MarginTooSmall()", "error OpenInterestCap()",
+  "error UtilizationCap()", "error TooManyPositions()", "error Slippage()", "error NotOwner()", "error NotKnockable()",
+  "error Underwater()", "error UnknownPosition()", "error PriceCheckFailed()", "error CapExceeded()", "error PartialFill()",
+  "error ERC4626ExceededMaxDeposit(address receiver, uint256 assets, uint256 max)",
+  "error ERC4626ExceededMaxWithdraw(address owner, uint256 assets, uint256 max)",
+];
+export const REASONS: Record<string, string> = {
+  StaleFeed: "Chainlink has not printed in 12 hours.",
+  PoolPriceMismatch: "the pool has moved more than 1.5% from the Chainlink price.",
+  PriceCheckFailed: "a safety check is failing, so LP deposits and withdrawals wait.",
+  BadLeverage: "leverage must be 2× to 5×.",
+  MarginTooSmall: "the margin is below the minimum.",
+  OpenInterestCap: "open interest would pass its $30 cap.",
+  UtilizationCap: "the vault would lend more than 80% of what it holds.",
+  TooManyPositions: "too many open positions.",
+  Slippage: "the fill moved past the limit.",
+  NotOwner: "only the position's owner can close it.",
+  NotKnockable: "the price is above this position's knock-out level.",
+  Underwater: "the position can't repay the vault in full; it can only be knocked out.",
+  UnknownPosition: "no such position.",
+  CapExceeded: "the vault is at its $20 cap.",
+  PartialFill: "the pool could not fill the whole trade.",
+  ERC4626ExceededMaxDeposit: "the vault is at its $20 cap.",
+  ERC4626ExceededMaxWithdraw: "that is more than you can withdraw from idle cash.",
 };
 
 const ABI = {
@@ -59,6 +90,7 @@ const ABI = {
     "function close(uint256,uint256) returns (uint256)",
     "function knockOut(uint256) returns (uint256)",
     "function claim() returns (uint256)",
+    ...ERRORS,
   ],
   vault: [
     "function totalAssets() view returns (uint256)",
@@ -67,6 +99,7 @@ const ABI = {
     "function convertToAssets(uint256) view returns (uint256)",
     "function deposit(uint256,address) returns (uint256)",
     "function withdraw(uint256,address,address) returns (uint256)",
+    ...ERRORS,
   ],
 };
 

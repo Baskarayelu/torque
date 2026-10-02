@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseUnits, type Signer } from "ethers";
-import { connectWallet, isDeployed, makeReader, P, payoffAt, quote, writers, type Config, type Position, type Snapshot } from "./chain";
+import { connectWallet, isDeployed, makeReader, P, payoffAt, quote, REASONS, writers, type Config, type Position, type Snapshot } from "./chain";
 
 const DASH = "—";
 const usd = (x: number | null | undefined, d = 2) =>
@@ -19,9 +19,8 @@ const SECTIONS = [
 
 function Logo() {
   return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-      <path d="M17.5 6.5A8 8 0 1 0 19 11" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="11" cy="11" r="2.4" fill="currentColor" />
+    <svg width="22" height="22" viewBox="0 0 64 64" aria-hidden="true">
+      <path fill="currentColor" fillRule="evenodd" d="M62 32 L47 57.98 L17 57.98 L2 32 L17 6.02 L47 6.02 Z M28.8 10.5 L35.2 10.5 L35.2 19.92 A12.5 12.5 0 1 1 28.8 19.92 Z" />
     </svg>
   );
 }
@@ -91,8 +90,9 @@ export default function App({ cfg }: { cfg: Config }) {
       setMsg((m) => ({ ...m, [key]: `Confirmed ${tx.hash.slice(0, 10)}…` }));
       refresh();
     } catch (e) {
-      const err = e as { shortMessage?: string; reason?: string; message?: string };
-      setMsg((m) => ({ ...m, [key]: "Not sent: " + (err.shortMessage || err.reason || err.message) }));
+      const err = e as { shortMessage?: string; reason?: string; message?: string; revert?: { name?: string } };
+      const why = (err.revert?.name && REASONS[err.revert.name]) || err.shortMessage || err.reason || err.message;
+      setMsg((m) => ({ ...m, [key]: "Not sent: " + why }));
     }
   };
 
@@ -105,7 +105,7 @@ export default function App({ cfg }: { cfg: Config }) {
     !!price && price.feedFresh && (price.poolAgrees || price.feedAge <= P.TWAP_WINDOW) && price.feed <= p.barrier;
 
   const blocker = !deployed
-    ? "Contracts are not deployed yet. Values here are live reads, TORQUE formulas, or placeholders (—)."
+    ? "Not deployed to mainnet. Values here are live reads, TORQUE formulas, or placeholders (—)."
     : !price
       ? "Reading the chain…"
       : !price.feedFresh
@@ -159,8 +159,16 @@ export default function App({ cfg }: { cfg: Config }) {
   );
   const netCard = (
     <div className="net">
-      <b>{cfg.environment === "fork-rehearsal" ? "Local mainnet-fork rehearsal" : deployed ? "Robinhood Chain · mainnet" : "Not deployed yet"}</b>
-      <span className="muted">{cfg.environment === "fork-rehearsal" ? "Not mainnet. For screenshots and tests." : deployed ? `Chain ${cfg.chainId}` : "Mainnet deployment in progress"}</span>
+      <b>{cfg.environment === "fork-rehearsal" ? "Local mainnet-fork rehearsal" : deployed ? "Robinhood Chain · mainnet" : "Not deployed to mainnet"}</b>
+      <span className="muted">
+        {cfg.environment === "fork-rehearsal" ? (
+          "Not mainnet. For screenshots and tests."
+        ) : deployed ? (
+          `Chain ${cfg.chainId}`
+        ) : (
+          <a href={`${cfg.repo}#fork-rehearsal`}>Tested on a mainnet fork</a>
+        )}
+      </span>
     </div>
   );
 
@@ -221,7 +229,7 @@ export default function App({ cfg }: { cfg: Config }) {
             <span className="muted small">Chainlink RHNVDA / USD</span>
             <div className="chips-2">{checkChips}</div>
           </div>
-          <p className="muted small legend">— means a live value that appears once the contracts are deployed. Quotes use TORQUE's own formulas at the live Chainlink price.</p>
+          {!deployed && <p className="muted small legend">— marks a TORQUE value. The contracts are not deployed to mainnet, so there is none to read. Quotes use TORQUE's own formulas at the live Chainlink price.</p>}
 
           <section id="open" aria-labelledby="h-open" className="grid-open">
             <div className="card">
@@ -264,7 +272,7 @@ export default function App({ cfg }: { cfg: Config }) {
           <section id="mine" aria-labelledby="h-mine" className="card">
             <h2 id="h-mine">My positions</h2>
             {!deployed ? (
-              <p className="muted">{DASH} No positions: the contracts are not deployed yet.</p>
+              <p className="muted">{DASH} No positions: the contracts are not deployed to mainnet.</p>
             ) : !account ? (
               <p className="muted">Connect a wallet to see your positions.</p>
             ) : mine.length === 0 ? (
@@ -366,7 +374,7 @@ export default function App({ cfg }: { cfg: Config }) {
             <h2 id="h-all">All open positions</h2>
             <p className="muted small">Knock-outs are permissionless. When Chainlink prints at or below a position's knock-out level, anyone can trigger it here. The vault is repaid first; the trader can claim what is left.</p>
             {!snap?.positions ? (
-              <p className="muted">{DASH} No positions: the contracts are not deployed yet.</p>
+              <p className="muted">{DASH} No positions: the contracts are not deployed to mainnet.</p>
             ) : snap.positions.length === 0 ? (
               <p className="muted">No open positions.</p>
             ) : (

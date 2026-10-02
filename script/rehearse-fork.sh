@@ -20,6 +20,7 @@ W2=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 case "${1:-}" in
 up)
   pkill -f "anvil --fork-url" || true
+  for i in $(seq 1 10); do lsof -nP -iTCP:8545 -sTCP:LISTEN >/dev/null || break; [ "$i" = 5 ] && pkill -9 -f "anvil --fork-url"; sleep 1; done
   (anvil --fork-url "$UPSTREAM" --port 8545 --chain-id 4663 --block-time 1 > /tmp/torque-anvil.log 2>&1 &)
   for _ in $(seq 1 40); do cast chain-id --rpc-url $A >/dev/null 2>&1 && break; sleep 1; done
   cast rpc anvil_impersonateAccount $WHALE --rpc-url $A >/dev/null

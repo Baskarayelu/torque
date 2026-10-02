@@ -1,0 +1,10 @@
+{
+  "status": "fork-only",
+  "repo": "https://github.com/Torque-Protocol/torque",
+  "landing": "https://torque.0xo.in",
+  "dashboard": "https://app.torque.0xo.in",
+  "chainId": 4663,
+  "explorer": "https://robinhoodchain.blockscout.com",
+  "mainnet": { "MARKET": null, "VAULT": null, "deployBlock": null, "deployedAt": null, "seedTx": null },
+  "fork": { "block": 78402352, "date": "2026-10-02", "log": "research/fork-rehearsal-2026-10-02.log" }
+}

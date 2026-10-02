@@ -1,10 +1,15 @@
 # Videos
 
-Both videos are generated from this folder, so they can be rebuilt after any change.
+Both videos are built from this folder for the state in `../deployment.json` (see `../deployment/README.md`).
+`script/apply-deployment.py` writes the narration for that state to `demo-narration.json` / `pitch-narration.json`
+and the paste-ready ElevenLabs text to `narration/*-elevenlabs.txt`. Text for both states is always in
+`narration/fork-only/` and `narration/mainnet/`, so either voice track can be generated before the switch.
 
-- **Pitch Video:** `./build-pitch.sh out <TorqueMarket> <TorqueVault>` renders `pitch/slides.html` (1920×1080) with narration from `pitch-narration.json`.
-- **Demo Video:** `SITE_URL=<site> RPC=<rpc> PK=<demo wallet key> ./build-demo.sh out` drives the live site with real transactions (deposit, open, close) and narrates each step from `demo-narration.json`.
+- **Pitch Video:** `NARRATION_MP3=<pitch mp3> ./build-pitch.sh out` renders `pitch/slides.html` (1920×1080). The status slide follows `deployment.json`.
+- **Demo Video:** `NARRATION_MP3=<demo mp3> ./build-demo.sh out` opens the landing page, then drives the dashboard with an injected wallet and real transactions, one shot per narration line, paced by the voice track.
+  - fork-only: needs `./script/rehearse-fork.sh up`; records the fork dashboard build (with its "Local mainnet-fork rehearsal" banner) using anvil test wallet 2, and includes the knock-out shot with a test feed.
+  - mainnet: `RPC=<rpc> PK=<demo wallet key> NARRATION_MP3=... ./build-demo.sh out` records app.torque.0xo.in. `script/go-live.sh` runs this itself with `FILM=1`.
 
-Narration uses macOS `say` (voice `Samantha`; set `VOICE=` to change). To use your own voice, record each line of the narration JSON files to `out/n_<id>.aiff` (demo) or `out/p_<id>.aiff` (pitch) and re-run the mux step.
+Without `NARRATION_MP3` the scripts use macOS `say` as a guide track. Frames come from the browser's screencast with their timestamps, so the video plays at real time and the voice stays in sync.
 
-Setup: `npm install` here, then `npx playwright install chromium`. You also need `ffmpeg`.
+Setup: `npm install` here, then `npx playwright install chromium`. You also need `ffmpeg` and Foundry.

@@ -1,6 +1,6 @@
 out/
 cache/
-broadcast/*/dry-run/
+broadcast/
 .env
 app/node_modules/
 app/dist/

@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 # Builds the Pitch Video: slide images (Playwright) + narration (macOS say) + ffmpeg.
-#   ./build-pitch.sh out_dir [MARKET VAULT]
+#   ./build-pitch.sh out_dir         (NARRATION_MP3=<ElevenLabs pitch mp3> for the voice; else macOS say)
 set -euo pipefail
 mkdir -p "${1:-out}"; OUT="$(cd "${1:-out}" && pwd)"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 VOICE="${VOICE:-Samantha}"
-MARKET="${2:-}"; VAULT="${3:-}"
-node - "$HERE" "$OUT" "$MARKET" "$VAULT" <<'JS'
+# deployment state and addresses come from ../deployment.json
+read -r STATUS MARKET VAULT <<<"$(python3 -c "import json;d=json.load(open('$HERE/../deployment.json'));m=d['mainnet'];print(d['status'],m['MARKET'] or '-',m['VAULT'] or '-')")"
+node - "$HERE" "$OUT" "$MARKET" "$VAULT" "$STATUS" <<'JS'
 const { chromium } = require("playwright");
 const fs = require("fs");
-const [here, out, market, vault] = process.argv.slice(2);
+const [here, out, market, vault, status] = process.argv.slice(2);
 const steps = JSON.parse(fs.readFileSync(here + "/pitch-narration.json"));
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 1920, height: 1080 } });
   for (const s of steps) {
-    const qs = new URLSearchParams({ s: s.id, ...(market ? { market, vault } : {}) });
+    const qs = new URLSearchParams({ s: s.id, status, ...(status === "mainnet" ? { market, vault } : {}) });
     await p.goto("file://" + here + "/pitch/slides.html?" + qs, { waitUntil: "networkidle" });
     await p.waitForTimeout(400);
     await p.screenshot({ path: `${out}/slide_${s.id}.png` });

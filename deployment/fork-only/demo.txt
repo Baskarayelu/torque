@@ -1,0 +1,27 @@
+## hero
+[thoughtful] Robinhood Chain holds about seven hundred million dollars of U.S.D.G. [pause] But only about one point two million dollars of it is lent against stock tokens... and almost all of that is already borrowed. [intrigued] The demand for leverage on stocks is there. The dollars to fund it are not. [pause] This is Torque. [pause] [serious] Torque is not deployed to mainnet. Everything in this demo runs on a local fork of Robinhood Chain mainnet: the real U.S.D.G., the real Nvidia token, pool and Chainlink feed... with test wallets.
+
+## checks
+[content] Before Torque does anything, it runs two safety checks. [pause] Chainlink's Nvidia price has to be fresh... and the Nvidia pool's own thirty-minute average has to agree with it, within one and a half percent. [pause] Right now, on the fork, both pass.
+
+## lp
+[content] First, liquidity. [pause] A test wallet fills the vault to its twenty-dollar cap... and the contract refuses anything more.
+
+## quote
+[thoughtful] Now, a trade. [pause] Two dollars of margin, at five times leverage, buys about ten dollars of real Nvidia. The vault lends the rest. [pause] The quote shows the price where the position is worth zero... and the knock-out level, five percent above it. [slowly] The most I can lose is my two dollars.
+
+## open
+[snappy] I open it. [pause] The contract buys Nvidia in the forked Uniswap pool, within one percent of Chainlink's price... and holds it as the hedge.
+
+## position
+[content] Here's the position, with its knock-out level and live profit and loss. [pause] If Chainlink prints at or below that level, anyone can close it out... and the vault is repaid first.
+
+## close
+[content] Closing sells the Nvidia back into the pool. [pause] The vault is repaid in full... and the rest comes back to me in U.S.D.G.
+
+## knockout
+[thoughtful] Now the knock-out. [pause] On the fork, I replace the Chainlink feed with a test feed printing below a position's knock-out level. The pool disagrees, so new positions are refused. [pause] Knock-outs still go through. This wallet doesn't own that position... and it knocks it out anyway. [pause] The vault is repaid first, and the owner can claim the rest.
+
+## end
+[proud] No admin key. No pause switch. No upgrades. [pause] Margin, liquidity and payouts are all Paxos U.S.D.G. [pause] [serious] Torque is built and tested against Robinhood Chain mainnet, but it is not deployed there. [pause] The code, the rehearsal log, and every test are open on GitHub.
+

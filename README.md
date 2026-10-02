@@ -1,12 +1,16 @@
 # TORQUE: knock-out leverage on NVDA, settled in USDG on Robinhood Chain
 
-**Robinhood Chain holds $690M of USDG. Only $1.24M of it is lent against stock tokens, and 98% of that is already borrowed.**
+**Robinhood Chain holds $700M of USDG. Only $1.24M of it is lent against stock tokens, and 98% of that is already borrowed.**
 
-Measured on Robinhood Chain mainnet on 2026-10-02:
-- USDG `totalSupply` is 689.6M.
-- Morpho Blue (`0x9D53…1010`) has 303 markets. The 171 that take a Robinhood Stock Token as collateral hold $1,238,779 of USDG supplied and $1,214,406 borrowed.
-- The NVDA market has $529,015 supplied and is 100% borrowed.
-- The scan is reproducible: [research/](research/).
+Read from Robinhood Chain mainnet at block 78,338,439 (2026-10-02 15:28 UTC):
+- USDG `totalSupply` is $700.1M.
+- Morpho Blue (`0x9D53…1010`) has 303 markets. 171 take a Robinhood Stock Token as collateral. The 167 of those that lend USDG hold $1,239,258 supplied and $1,215,286 borrowed (98.1%); the other 4 lend WETH.
+- The largest NVDA market has $529,096 supplied and is 100% borrowed.
+- Reproducible: [research/chain_snapshot.py](research/chain_snapshot.py) wrote [research/chain-snapshot-2026-10-02.json](research/chain-snapshot-2026-10-02.json) from the market list in [research/](research/).
+
+<!-- deployment:status -->
+> **Status: not deployed to mainnet.** TORQUE is built and tested against Robinhood Chain mainnet state, but its contracts are not deployed there. The evidence is a full rehearsal on a local fork of mainnet ([log](research/fork-rehearsal-2026-10-02.log), block 78,402,352, 2026-10-02): the real USDG, NVDA, pool and Chainlink feed, the same deploy script, the dashboard and real transactions. See [Fork rehearsal](#fork-rehearsal).
+<!-- /deployment:status -->
 
 People want leverage on stock tokens, but the dollars to fund it are not there. The demand is visible on-chain and the supply is maxed out. TORQUE brings its own USDG liquidity and a product shaped for retail:
 
@@ -105,6 +109,23 @@ In this buildathon, two entries offer leverage on stock tokens. We read their co
 - **No sequencer-uptime check:** no such feed is known on Robinhood Chain.
 - **Not audited.**
 
+## Fork rehearsal
+
+`./script/rehearse-fork.sh up` forks Robinhood Chain mainnet locally with anvil, deploys TORQUE with the same `script/Deploy.s.sol`, seeds the vault with 15 USDG in that run and opens two positions from anvil's public test wallets. `python3 script/rehearse_scenario.py` then runs the whole lifecycle against the real USDG, NVDA, pool and Chainlink feed as forked, and logs every transaction: [research/fork-rehearsal-2026-10-02.log](research/fork-rehearsal-2026-10-02.log).
+
+| Step | Result on the fork |
+|---|---|
+| LP fills the vault | Deposit to the $20 cap succeeds; one more cent is refused (`ERC4626ExceededMaxDeposit`) |
+| Open $1 at 3× | Real NVDA bought in the forked pool; NVDA held equals NVDA owed, 1:1 |
+| Close | Vault repaid in full; the trader receives the rest in USDG |
+| Failed check | Feed replaced by a test feed at $195 (fork only): opens refused (`PoolPriceMismatch`), deposits refused (`PriceCheckFailed`) |
+| Permissionless knock-out | A wallet that owns nothing knocks out #1 at its $197.44 knock-out level; the vault is repaid first; bad debt 0 |
+| Claim | The owner claims the residual; nothing left owed |
+
+The dashboard screenshots in [docs/screenshots/dashboard/](docs/screenshots/dashboard/) are from this fork, in a normal and a failed-check state.
+
+<!-- deployment:deployments -->
 ## Deployments
 
-Not yet deployed. `script/Deploy.s.sol` targets Robinhood Chain mainnet (chain 4663) and prints the submission address lines (`network: address — label`).
+**Not deployed to mainnet.** `script/Deploy.s.sol` targets Robinhood Chain mainnet (chain 4663) and seeds the vault in the same run; `script/go-live.sh` runs it with preflight checks. Until then, the contracts' evidence is the six fork tests against live mainnet state and the [fork rehearsal](#fork-rehearsal).
+<!-- /deployment:deployments -->

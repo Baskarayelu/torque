@@ -158,7 +158,9 @@ contract RobinhoodForkTest is Test {
                 uint256 back = sw.sellNvda(nvdaGot);
                 int256 pnl = int256(back) - int256(sizes[i]);
                 console.log("front-run USDG", sizes[i] / 1e6);
-                console.log("  victim fill vs Chainlink, bps over:", (fill * 10_000 / p6) - 10_000);
+                // signed: the victim can fill below Chainlink when the pool sits under the feed
+                console.log("  victim fill vs Chainlink, bps (negative = below):");
+                console.logInt(int256(fill * 10_000 / p6) - 10_000);
                 console.logInt(pnl);
                 assertLt(pnl, 0, "sandwich loses money");
             } catch (bytes memory err) {

@@ -1,0 +1,33 @@
+[proud] Torque. [pause] Knock-out leverage on Nvidia, settled in U.S.D.G., on Robinhood Chain.
+
+[long pause]
+
+[thoughtful] Robinhood Chain holds almost seven hundred million dollars of Paxos U.S.D.G. [pause] But only about one point two million dollars is lent against stock tokens... and almost all of it is already borrowed. [intrigued] People want leverage on stocks. The dollars to fund it are not there.
+
+[long pause]
+
+[optimistic] Torque is leverage that brings its own liquidity. [pause] Pick Nvidia, choose two to five times, and pay in U.S.D.G. [slowly] The most you can ever lose is what you put in. [pause] There are no margin calls.
+
+[long pause]
+
+[content] When you open, the vault lends the rest, and the whole position is bought as real Nvidia in the Uniswap pool, within one percent of Chainlink's price. [pause] If Chainlink prints at your knock-out level, anyone can close it. The vault is repaid first... and the rest is yours.
+
+[long pause]
+
+[thoughtful] The hard part is keeping the vault solvent. [pause] Every position is fully hedged with real Nvidia, and exposure is capped in the contract. [pause] Before every action, two safety checks run: the Chainlink price must be fresh, and the pool's thirty-minute average must agree with it. When the feed freezes for the weekend... Torque stops.
+
+[long pause]
+
+[proud] The solvency invariants were written before the product code. [pause] Then an adversarial pass tried to drain the vault. It found one real problem, a dead price feed that could have locked the money, and it was fixed before deployment. [pause] The tests catch every planted bug that changes the contract's behaviour... twenty-four of them.
+
+[long pause]
+
+[content] U.S.D.G. is not bolted on. [pause] It is the margin, the liquidity, the loan... and the payout.
+
+[long pause]
+
+[thoughtful] Against the field: Gauntlet's leverage is an off-chain game, priced by the operator's own server. Torque settles on chain, against the real Nvidia price. [pause] Undertow's vault lends a stablecoin it mints itself. Torque's counterparty is a real U.S.D.G. vault... and every loan is secured by real Nvidia.
+
+[long pause]
+
+[optimistic] Torque is live on Robinhood Chain mainnet, with the vault capped at twenty dollars for the buildathon. Testnet has no real stock feeds or stock pools, so it would prove nothing. [pause] Small, and real. Next: shorts, more stocks, and a bigger vault.

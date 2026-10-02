@@ -9,7 +9,7 @@ Read from Robinhood Chain mainnet at block 78,338,439 (2026-10-02 15:28 UTC):
 - Reproducible: [research/chain_snapshot.py](research/chain_snapshot.py) wrote [research/chain-snapshot-2026-10-02.json](research/chain-snapshot-2026-10-02.json) from the market list in [research/](research/).
 
 <!-- deployment:status -->
-> **Status: not deployed to mainnet.** TORQUE is built and tested against Robinhood Chain mainnet state, but its contracts are not deployed there. The evidence is a full rehearsal on a local fork of mainnet ([log](research/fork-rehearsal-2026-10-02.log), block 78,402,352, 2026-10-02): the real USDG, NVDA, pool and Chainlink feed, the same deploy script, the dashboard and real transactions. See [Fork rehearsal](#fork-rehearsal).
+> **Status: live on Robinhood Chain mainnet.** TorqueMarket [`0xbee6Da89F879B018Fea5d7A78311db720B9D8096`](https://robinhoodchain.blockscout.com/address/0xbee6Da89F879B018Fea5d7A78311db720B9D8096) and TorqueVault [`0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf`](https://robinhoodchain.blockscout.com/address/0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf), deployed at block 78,466,999 on 2026-10-02 19:04 UTC and source-verified on Sourcify. Dashboard: [app.torque.0xo.in](https://app.torque.0xo.in).
 <!-- /deployment:status -->
 
 People want leverage on stock tokens, but the dollars to fund it are not there. The demand is visible on-chain and the supply is maxed out. TORQUE brings its own USDG liquidity and a product shaped for retail:
@@ -127,5 +127,20 @@ The dashboard screenshots in [docs/screenshots/dashboard/](docs/screenshots/dash
 <!-- deployment:deployments -->
 ## Deployments
 
-**Not deployed to mainnet.** `script/Deploy.s.sol` targets Robinhood Chain mainnet (chain 4663) and seeds the vault in the same run; `script/go-live.sh` runs it with preflight checks. Until then, the contracts' evidence is the six fork tests against live mainnet state and the [fork rehearsal](#fork-rehearsal).
+| Robinhood Chain mainnet (4663) | Address |
+|---|---|
+| TorqueMarket | [`0xbee6Da89F879B018Fea5d7A78311db720B9D8096`](https://robinhoodchain.blockscout.com/address/0xbee6Da89F879B018Fea5d7A78311db720B9D8096) |
+| TorqueVault (USDG LP) | [`0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf`](https://robinhoodchain.blockscout.com/address/0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf) |
+
+Deployed at block 78,466,999 on 2026-10-02 19:04 UTC by `script/go-live.sh` (`script/Deploy.s.sol`) from [`0xA22B72d975d608Bd9Dd4945F4B28a4479A97967F`](https://robinhoodchain.blockscout.com/address/0xA22B72d975d608Bd9Dd4945F4B28a4479A97967F). Both contracts are an exact match on [Sourcify](https://repo.sourcify.dev/4663/0xbee6Da89F879B018Fea5d7A78311db720B9D8096) ([vault](https://repo.sourcify.dev/4663/0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf)).
+
+| First transactions on mainnet | Tx |
+|---|---|
+| Deploy TorqueVault | [`0x43e4f58b…797001`](https://robinhoodchain.blockscout.com/tx/0x43e4f58b35e1dd181244b279099886df95b12bbd48a4373572ba954dda797001) |
+| Deploy TorqueMarket | [`0x3401fe0c…7fbb47`](https://robinhoodchain.blockscout.com/tx/0x3401fe0c399aeaa264d8b0fc58a7b2f408ec8f2aabb1a17b6c85c052ae7fbb47) |
+| Wire the vault to the market (one-shot `setMarket`) | [`0x58a5fd2c…615ee8`](https://robinhoodchain.blockscout.com/tx/0x58a5fd2c9129dd3d117ea73c1639b00e20ab58b2d538ac72fa31a13688615ee8) |
+| Seed the vault with 15 USDG (same run) | [`0xfc3a0b3a…5a62eb`](https://robinhoodchain.blockscout.com/tx/0xfc3a0b3a4437a747c1004925b979e720945bc3e91ae5eaa062ff495f035a62eb) |
+| Fill the vault to its $20 cap | [`0x6d401704…6e81f6`](https://robinhoodchain.blockscout.com/tx/0x6d401704fb3d4270da2340c8c9b3992848850190505f02e6b950daeebb6e81f6) |
+| Open position #1: $2 at 5×, real NVDA bought in the pool | [`0x3a83b71d…bd2613`](https://robinhoodchain.blockscout.com/tx/0x3a83b71d6d51e6ef1317dc3d2d0f848b7b262dda6be64bf959d7df9bb6bd2613) |
+| Close position #1: vault repaid in full, 1.98 USDG back to the trader | [`0xcf8a17fe…6d4315`](https://robinhoodchain.blockscout.com/tx/0xcf8a17fe9e5453e09fdb452c19d3a7deb8cad20b7ca1177210d823eb1b6d4315) |
 <!-- /deployment:deployments -->

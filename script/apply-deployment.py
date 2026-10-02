@@ -32,8 +32,10 @@ v = {
     "repo": d["repo"], "landing": d["landing"], "dashboard": d["dashboard"], "dashboardHost": d["dashboard"].split("//")[1],
     "explorer": d["explorer"], "chainId": d["chainId"], "MARKET": m["MARKET"] or "", "VAULT": m["VAULT"] or "",
     "deployBlockFmt": f"{m['deployBlock']:,}" if m["deployBlock"] else "", "deployedAt": m["deployedAt"] or "",
-    "seedTx": m["seedTx"] or "", "forkBlockFmt": f"{f['block']:,}", "forkDate": f["date"], "forkLog": f["log"],
+    "seedTx": m["seedTx"] or "", "deployer": m.get("deployer") or "", "forkBlockFmt": f"{f['block']:,}", "forkDate": f["date"], "forkLog": f["log"],
 }
+for k, h in (m.get("txs") or {}).items():
+    v[f"tx_{k}"], v[f"tx_{k}_s"] = h, f"{h[:10]}…{h[-6:]}"
 if status == "mainnet":
     v["contractField"] = f"Robinhood Chain: {m['MARKET']} — TorqueMarket\nRobinhood Chain: {m['VAULT']} — TorqueVault (USDG LP)"
 else:

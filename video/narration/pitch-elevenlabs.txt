@@ -30,4 +30,4 @@
 
 [long pause]
 
-[content] Torque is built and tested against Robinhood Chain mainnet state, but it is not deployed there. [pause] The evidence is a full rehearsal on a fork of mainnet: the real U.S.D.G., Nvidia, pool and Chainlink feed, the same deploy script, and real transactions. Testnet has no real stock feeds or stock pools, so it would prove nothing. [pause] Next: mainnet, shorts, and more stocks.
+[optimistic] Torque is live on Robinhood Chain mainnet, with the vault capped at twenty dollars for the buildathon. Testnet has no real stock feeds or stock pools, so it would prove nothing. [pause] Small, and real. Next: shorts, more stocks, and a bigger vault.

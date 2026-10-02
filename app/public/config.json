@@ -6,11 +6,11 @@
   "explorer": "https://robinhoodchain.blockscout.com",
   "repo": "https://github.com/Torque-Protocol/torque",
   "landing": "https://torque.0xo.in",
-  "MARKET": null,
-  "VAULT": null,
+  "MARKET": "0xbee6Da89F879B018Fea5d7A78311db720B9D8096",
+  "VAULT": "0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf",
   "USDG": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
   "NVDA": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
   "POOL": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
   "FEED": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
-  "deployment": "fork-only"
+  "deployment": "mainnet"
 }

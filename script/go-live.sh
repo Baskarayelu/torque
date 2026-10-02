@@ -105,13 +105,13 @@ ok "TorqueMarket $MARKET"; ok "TorqueVault  $VAULT, seeded with $(python3 -c "pr
 
 phase "5/7 Source verification"
 if [ -n "$REHEARSAL" ]; then echo "  (rehearsal) would check Sourcify for $MARKET and $VAULT"; else
+  verified() { for a in "$MARKET" "$VAULT"; do curl -s "https://sourcify.dev/server/v2/contract/4663/$a" | grep -qE '"match":"(exact_match|match)"' || return 1; done; }
   for i in 1 2 3 4 5 6; do
-    S=$(curl -s "https://sourcify.dev/server/check-by-addresses?addresses=$MARKET,$VAULT&chainIds=4663")
-    echo "$S" | python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if all(x.get('status') in ('perfect','partial') for x in d) else 1)" && break
+    verified && break
     [ $i = 3 ] && { forge verify-contract "$MARKET" src/TorqueMarket.sol:TorqueMarket --verifier sourcify --chain 4663 || true; forge verify-contract "$VAULT" src/TorqueVault.sol:TorqueVault --verifier sourcify --chain 4663 || true; }
     sleep 20
   done
-  echo "$S" | python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if all(x.get('status') in ('perfect','partial') for x in d) else 1)" || die "Sourcify has not verified both contracts (deployment is live; rerun verification by hand)"
+  verified || die "Sourcify has not verified both contracts (deployment is live; rerun verification by hand)"
   ok "both contracts verified on Sourcify"
 fi
 

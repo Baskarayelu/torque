@@ -11,5 +11,6 @@ These are snapshots and scripts behind the numbers in the README and SPEC. All d
 | `chain-snapshot-2026-10-02.json` | An earlier read at block 78,338,439 (2026-10-02 15:28 UTC): $700.1M; $1.24M lent, 98.1% borrowed; NVDA market 100%. Kept to show the figures move |
 | `nvda_feed_rounds_2026-10-01.json` | 601 rounds of Chainlink `RHNVDA / USD` (`0x379EC4f7…9F15`), as `[roundId, price, updatedAt]` |
 | `pool_twap_vs_feed.py` | Rebuilds the NVDA/USDG pool's 30-minute average from `Swap` events and compares it with the feed every 5 minutes |
+| `lp_backtest.py` | The LP backtest: every Chainlink RHNVDA round fetched from chain (cached in `data/rhnvda_rounds.csv`), the vault run through the contract's own formulas over the last 90 days. Writes `LP_BACKTEST.md`, `lp-backtest.json`, `lp-backtest-nav.svg` and `data/lp_backtest_nav_5x_80pct_7d.csv` |
 
 An earlier scan for this project reported "$15 of stock-collateral lending". It was wrong: failed log requests silently returned nothing, so it saw 21 of the 303 markets. The script here retries every request and fails loudly instead.

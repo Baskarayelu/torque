@@ -1,0 +1,783 @@
+{
+ "generated": "2026-10-03T17:42:56Z",
+ "source": "Chainlink RHNVDA/USD 0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15 on Robinhood Chain, every round via getRoundData",
+ "window": {
+  "first_print": "2026-07-06T00:00:42Z",
+  "last_print": "2026-10-02T17:07:32Z",
+  "prints": 979,
+  "days": 88.7130787037037
+ },
+ "dropped_rounds": [
+  {
+   "phase": 1,
+   "round": 1,
+   "value": 20822000000.0,
+   "updated_at": 1782086443
+  },
+  {
+   "phase": 1,
+   "round": 2,
+   "value": 20926999999.0,
+   "updated_at": 1782090344
+  },
+  {
+   "phase": 1,
+   "round": 3,
+   "value": 21041870000.0,
+   "updated_at": 1782126385
+  },
+  {
+   "phase": 1,
+   "round": 4,
+   "value": 21150000000.0,
+   "updated_at": 1782135027
+  },
+  {
+   "phase": 1,
+   "round": 5,
+   "value": 21316500000.0,
+   "updated_at": 1782135267
+  },
+  {
+   "phase": 1,
+   "round": 6,
+   "value": 21201999999.0,
+   "updated_at": 1782138238
+  },
+  {
+   "phase": 1,
+   "round": 7,
+   "value": 21064499999.0,
+   "updated_at": 1782138688
+  },
+  {
+   "phase": 1,
+   "round": 8,
+   "value": 20953565000.0,
+   "updated_at": 1782139288
+  },
+  {
+   "phase": 1,
+   "round": 9,
+   "value": 21067500000.0,
+   "updated_at": 1782142710
+  },
+  {
+   "phase": 1,
+   "round": 10,
+   "value": 20948000000.0,
+   "updated_at": 1782144030
+  },
+  {
+   "phase": 1,
+   "round": 11,
+   "value": 20839499999.0,
+   "updated_at": 1782155133
+  },
+  {
+   "phase": 1,
+   "round": 12,
+   "value": 20720999999.0,
+   "updated_at": 1782179321
+  },
+  {
+   "phase": 1,
+   "round": 13,
+   "value": 20610000000.0,
+   "updated_at": 1782184212
+  },
+  {
+   "phase": 1,
+   "round": 14,
+   "value": 20506500000.0,
+   "updated_at": 1782191505
+  },
+  {
+   "phase": 1,
+   "round": 15,
+   "value": 20394000000.0,
+   "updated_at": 1782195105
+  },
+  {
+   "phase": 1,
+   "round": 16,
+   "value": 20285000000.0,
+   "updated_at": 1782198196
+  },
+  {
+   "phase": 1,
+   "round": 17,
+   "value": 20183405000.0,
+   "updated_at": 1782203028
+  },
+  {
+   "phase": 1,
+   "round": 18,
+   "value": 20284735000.0,
+   "updated_at": 1782206869
+  },
+  {
+   "phase": 1,
+   "round": 19,
+   "value": 20399660000.0,
+   "updated_at": 1782214792
+  },
+  {
+   "phase": 1,
+   "round": 20,
+   "value": 20293910000.0,
+   "updated_at": 1782218093
+  },
+  {
+   "phase": 1,
+   "round": 21,
+   "value": 20174795000.0,
+   "updated_at": 1782221303
+  },
+  {
+   "phase": 1,
+   "round": 22,
+   "value": 20072010000.0,
+   "updated_at": 1782221543
+  },
+  {
+   "phase": 1,
+   "round": 23,
+   "value": 20184584999.0,
+   "updated_at": 1782221754
+  },
+  {
+   "phase": 1,
+   "round": 24,
+   "value": 20306520000.0,
+   "updated_at": 1782222509
+  }
+ ],
+ "assumptions": {
+  "slippage": 0.002,
+  "apr": 0.1,
+  "open_fee": 0.001,
+  "ko_buffer": 0.05,
+  "vault": 20.0,
+  "oi_cap": 30.0,
+  "utilisation_cap": 0.8,
+  "demand": "every lendable dollar borrowed, slots reopen at the next print, closes after the holding period"
+ },
+ "price_path": {
+  "start": 196.295,
+  "end": 234.99711907,
+  "min": 189.42875,
+  "max": 237.55399953,
+  "worst_move_between_prints_pct": -1.4058597714126875,
+  "worst_move_between_prints_at": "2026-08-26T20:20:36Z",
+  "feed_silences_over_12h": 26,
+  "longest_silence_hours": 78.24166666666666,
+  "longest_silence": {
+   "from": "2026-09-04T17:46:24Z",
+   "to": "2026-09-08T00:00:54Z",
+   "kind": "weekend or holiday",
+   "silent_hours": 78.24166666666666,
+   "price_move_pct": 0.3666455709809835
+  },
+  "silences_weekend_or_holiday": 12,
+  "silences_weekday": 14,
+  "longest_weekday_silence": {
+   "from": "2026-08-13T16:26:27Z",
+   "to": "2026-08-14T13:28:36Z",
+   "kind": "weekday, no print",
+   "silent_hours": 21.035833333333333,
+   "price_move_pct": 0.5563569383724376
+  },
+  "worst_move_across_a_silence": {
+   "from": "2026-09-11T20:03:43Z",
+   "to": "2026-09-14T00:00:29Z",
+   "kind": "weekend or holiday",
+   "silent_hours": 51.94611111111111,
+   "price_move_pct": -1.1157854630177266
+  },
+  "worst_peak_to_trough_pct": -11.283046323219303,
+  "worst_peak_to_trough_window": [
+   "2026-07-22T21:09:16Z",
+   "2026-07-29T20:09:25Z"
+  ],
+  "worst_fall_within_7_days_pct": -11.283046323219303,
+  "worst_fall_within_7_days_ending": "2026-07-29T20:09:25Z"
+ },
+ "headline": {
+  "leverage": 5,
+  "target_utilisation": 0.8,
+  "hold_days": 7,
+  "opens": 104,
+  "closes": 96,
+  "knock_outs": 0,
+  "fees_usdg": 0.26130653266331705,
+  "interest_usdg": 0.37507113140537385,
+  "bad_debt_usdg": 0.0,
+  "return_pct": 3.2509289088772153,
+  "annualised_pct": 14.068352521588622,
+  "max_drawdown_pct": 0.0,
+  "max_drawdown_window": null,
+  "worst_day": [
+   "2026-09-17",
+   0.013853418430453956
+  ],
+  "mean_utilisation_pct": 78.89512210136682,
+  "days_an_open_was_refused_by_a_cap": [],
+  "worst_bad_debt_event": null,
+  "knock_out_events": []
+ },
+ "grid": [
+  {
+   "leverage": 2,
+   "target_utilisation": 0.4,
+   "hold_days": 7,
+   "opens": 104,
+   "closes": 96,
+   "knock_outs": 0,
+   "fees_usdg": 0.20841683366733482,
+   "interest_usdg": 0.18753556570267627,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 2.0142822911171976,
+   "annualised_pct": 8.551198641558443,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.006996408214976491
+   ],
+   "mean_utilisation_pct": 39.65227992667357,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 2,
+   "target_utilisation": 0.4,
+   "hold_days": 30,
+   "opens": 24,
+   "closes": 16,
+   "knock_outs": 0,
+   "fees_usdg": 0.048096192384769546,
+   "interest_usdg": 0.13195816844241293,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 1.2126790847042157,
+   "annualised_pct": 5.084459172771805,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.007040813207481733
+   ],
+   "mean_utilisation_pct": 39.78328566509777,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 2,
+   "target_utilisation": 0.8,
+   "hold_days": 7,
+   "opens": 91,
+   "closes": 84,
+   "knock_outs": 0,
+   "fees_usdg": 0.3647294589178359,
+   "interest_usdg": 0.32818723997968346,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 3.5249940094543186,
+   "annualised_pct": 15.3192591395781,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.012093749845898394
+   ],
+   "mean_utilisation_pct": 68.94459128777467,
+   "days_an_open_was_refused_by_a_cap": [
+    "2026-07-06",
+    "2026-07-07",
+    "2026-07-08",
+    "2026-07-09",
+    "2026-07-10",
+    "2026-07-13",
+    "2026-07-14",
+    "2026-07-15",
+    "2026-07-16",
+    "2026-07-17",
+    "2026-07-20",
+    "2026-07-21",
+    "2026-07-22",
+    "2026-07-23",
+    "2026-07-24",
+    "2026-07-27",
+    "2026-07-28",
+    "2026-07-29",
+    "2026-07-30",
+    "2026-07-31",
+    "2026-08-03",
+    "2026-08-04",
+    "2026-08-05",
+    "2026-08-06",
+    "2026-08-07",
+    "2026-08-10",
+    "2026-08-11",
+    "2026-08-12",
+    "2026-08-13",
+    "2026-08-14",
+    "2026-08-17",
+    "2026-08-18",
+    "2026-08-19",
+    "2026-08-20",
+    "2026-08-21",
+    "2026-08-24",
+    "2026-08-25",
+    "2026-08-26",
+    "2026-08-27",
+    "2026-08-28",
+    "2026-08-31",
+    "2026-09-01",
+    "2026-09-02",
+    "2026-09-03",
+    "2026-09-04",
+    "2026-09-08",
+    "2026-09-09",
+    "2026-09-10",
+    "2026-09-11",
+    "2026-09-14",
+    "2026-09-15",
+    "2026-09-16",
+    "2026-09-17",
+    "2026-09-18",
+    "2026-09-21",
+    "2026-09-22",
+    "2026-09-23",
+    "2026-09-24",
+    "2026-09-25",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30",
+    "2026-10-01",
+    "2026-10-02"
+   ],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 2,
+   "target_utilisation": 0.8,
+   "hold_days": 30,
+   "opens": 21,
+   "closes": 14,
+   "knock_outs": 0,
+   "fees_usdg": 0.0841683366733467,
+   "interest_usdg": 0.23092679477422262,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 2.122188398232172,
+   "annualised_pct": 9.02439366258021,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.012227045610702092
+   ],
+   "mean_utilisation_pct": 69.33995466155744,
+   "days_an_open_was_refused_by_a_cap": [
+    "2026-07-06",
+    "2026-07-07",
+    "2026-07-08",
+    "2026-07-09",
+    "2026-07-10",
+    "2026-07-13",
+    "2026-07-14",
+    "2026-07-15",
+    "2026-07-16",
+    "2026-07-17",
+    "2026-07-20",
+    "2026-07-21",
+    "2026-07-22",
+    "2026-07-23",
+    "2026-07-24",
+    "2026-07-27",
+    "2026-07-28",
+    "2026-07-29",
+    "2026-07-30",
+    "2026-07-31",
+    "2026-08-03",
+    "2026-08-04",
+    "2026-08-05",
+    "2026-08-06",
+    "2026-08-07",
+    "2026-08-10",
+    "2026-08-11",
+    "2026-08-12",
+    "2026-08-13",
+    "2026-08-14",
+    "2026-08-17",
+    "2026-08-18",
+    "2026-08-19",
+    "2026-08-20",
+    "2026-08-21",
+    "2026-08-24",
+    "2026-08-25",
+    "2026-08-26",
+    "2026-08-27",
+    "2026-08-28",
+    "2026-08-31",
+    "2026-09-01",
+    "2026-09-02",
+    "2026-09-03",
+    "2026-09-04",
+    "2026-09-08",
+    "2026-09-09",
+    "2026-09-10",
+    "2026-09-11",
+    "2026-09-14",
+    "2026-09-15",
+    "2026-09-16",
+    "2026-09-17",
+    "2026-09-18",
+    "2026-09-21",
+    "2026-09-22",
+    "2026-09-23",
+    "2026-09-24",
+    "2026-09-25",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30",
+    "2026-10-01",
+    "2026-10-02"
+   ],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 3,
+   "target_utilisation": 0.4,
+   "hold_days": 7,
+   "opens": 104,
+   "closes": 96,
+   "knock_outs": 0,
+   "fees_usdg": 0.15646940822467403,
+   "interest_usdg": 0.18753556570268692,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 1.7545451639035203,
+   "annualised_pct": 7.418561759217179,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.007011563278780386
+   ],
+   "mean_utilisation_pct": 39.69821926251426,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 3,
+   "target_utilisation": 0.4,
+   "hold_days": 30,
+   "opens": 24,
+   "closes": 16,
+   "knock_outs": 0,
+   "fees_usdg": 0.03610832497492478,
+   "interest_usdg": 0.1319581684424147,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 1.1527397476548629,
+   "annualised_pct": 4.828647591530344,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.007044992470417455
+   ],
+   "mean_utilisation_pct": 39.79677154882536,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 3,
+   "target_utilisation": 0.8,
+   "hold_days": 7,
+   "opens": 104,
+   "closes": 96,
+   "knock_outs": 0,
+   "fees_usdg": 0.31293881644934807,
+   "interest_usdg": 0.37507113140537385,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 3.509090327807729,
+   "annualised_pct": 15.246387989490362,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.013824015795349531
+   ],
+   "mean_utilisation_pct": 78.80536504755419,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 3,
+   "target_utilisation": 0.8,
+   "hold_days": 30,
+   "opens": 24,
+   "closes": 16,
+   "knock_outs": 0,
+   "fees_usdg": 0.07221664994984955,
+   "interest_usdg": 0.2639163368848294,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 2.3054794953099034,
+   "annualised_pct": 9.831747275376056,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.013954567056639888
+   ],
+   "mean_utilisation_pct": 79.1927148480445,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 4,
+   "target_utilisation": 0.4,
+   "hold_days": 7,
+   "opens": 104,
+   "closes": 96,
+   "knock_outs": 0,
+   "fees_usdg": 0.13922356091030796,
+   "interest_usdg": 0.18753556570268692,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 1.6683159273315429,
+   "annualised_pct": 7.044526849574484,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.007016609083265735
+   ],
+   "mean_utilisation_pct": 39.7135020500726,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 4,
+   "target_utilisation": 0.4,
+   "hold_days": 30,
+   "opens": 24,
+   "closes": 16,
+   "knock_outs": 0,
+   "fees_usdg": 0.03212851405622489,
+   "interest_usdg": 0.1319581684424147,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 1.132840693061321,
+   "annualised_pct": 4.743825896367526,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.007046381026754034
+   ],
+   "mean_utilisation_pct": 39.801251098687544,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 4,
+   "target_utilisation": 0.8,
+   "hold_days": 7,
+   "opens": 104,
+   "closes": 96,
+   "knock_outs": 0,
+   "fees_usdg": 0.27844712182061593,
+   "interest_usdg": 0.37507113140537385,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 3.336631854663774,
+   "annualised_pct": 14.45841436933799,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.013843643653532745
+   ],
+   "mean_utilisation_pct": 78.86529478795828,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 4,
+   "target_utilisation": 0.8,
+   "hold_days": 30,
+   "opens": 24,
+   "closes": 16,
+   "knock_outs": 0,
+   "fees_usdg": 0.06425702811244978,
+   "interest_usdg": 0.2639163368848294,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 2.265681386122864,
+   "annualised_pct": 9.65606272938906,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.013960016085823312
+   ],
+   "mean_utilisation_pct": 79.21040962122908,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 5,
+   "target_utilisation": 0.4,
+   "hold_days": 7,
+   "opens": 104,
+   "closes": 96,
+   "knock_outs": 0,
+   "fees_usdg": 0.13065326633165852,
+   "interest_usdg": 0.18753556570268692,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 1.6254644544385188,
+   "annualised_pct": 6.859017947692081,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.007019119289464193
+   ],
+   "mean_utilisation_pct": 39.72110267018969,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 5,
+   "target_utilisation": 0.4,
+   "hold_days": 30,
+   "opens": 24,
+   "closes": 16,
+   "knock_outs": 0,
+   "fees_usdg": 0.030150753768844206,
+   "interest_usdg": 0.1319581684424147,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 1.122951891624524,
+   "annualised_pct": 4.7016932276011225,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.007047071271082395
+   ],
+   "mean_utilisation_pct": 39.80347765196902,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 5,
+   "target_utilisation": 0.8,
+   "hold_days": 7,
+   "opens": 104,
+   "closes": 96,
+   "knock_outs": 0,
+   "fees_usdg": 0.26130653266331705,
+   "interest_usdg": 0.37507113140537385,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 3.2509289088772153,
+   "annualised_pct": 14.068352521588622,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.013853418430453956
+   ],
+   "mean_utilisation_pct": 78.89512210136682,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  },
+  {
+   "leverage": 5,
+   "target_utilisation": 0.8,
+   "hold_days": 30,
+   "opens": 24,
+   "closes": 16,
+   "knock_outs": 0,
+   "fees_usdg": 0.06030150753768841,
+   "interest_usdg": 0.2639163368848294,
+   "bad_debt_usdg": 0.0,
+   "return_pct": 2.2459037832490703,
+   "annualised_pct": 9.568835755408344,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_window": null,
+   "worst_day": [
+    "2026-09-17",
+    0.013962725554805822
+   ],
+   "mean_utilisation_pct": 79.21920651917857,
+   "days_an_open_was_refused_by_a_cap": [],
+   "worst_bad_debt_event": null,
+   "knock_out_events": []
+  }
+ ],
+ "stress_single_gap": [
+  {
+   "leverage": 2,
+   "knock_out_drop_pct": 47.5,
+   "worth_zero_drop_pct": 50.0,
+   "loss_per_dollar_lent": {
+    "-10%": 0.0,
+    "-15%": 0.0,
+    "-20%": 0.0,
+    "-25%": 0.0,
+    "-30%": 0.0,
+    "-40%": 0.0
+   }
+  },
+  {
+   "leverage": 3,
+   "knock_out_drop_pct": 29.999999999999993,
+   "worth_zero_drop_pct": 33.33333333333333,
+   "loss_per_dollar_lent": {
+    "-10%": 0.0,
+    "-15%": 0.0,
+    "-20%": 0.0,
+    "-25%": 0.0,
+    "-30%": 0.0,
+    "-40%": 0.10180000000000008
+   }
+  },
+  {
+   "leverage": 4,
+   "knock_out_drop_pct": 21.249999999999993,
+   "worth_zero_drop_pct": 25.0,
+   "loss_per_dollar_lent": {
+    "-10%": 0.0,
+    "-15%": 0.0,
+    "-20%": 0.0,
+    "-25%": 0.001999999999999994,
+    "-30%": 0.06853333333333345,
+    "-40%": 0.20159999999999992
+   }
+  },
+  {
+   "leverage": 5,
+   "knock_out_drop_pct": 16.000000000000004,
+   "worth_zero_drop_pct": 20.000000000000007,
+   "loss_per_dollar_lent": {
+    "-10%": 0.0,
+    "-15%": 0.0,
+    "-20%": 0.0019999999999999363,
+    "-25%": 0.06437499999999995,
+    "-30%": 0.12675000000000006,
+    "-40%": 0.25149999999999995
+   }
+  }
+ ]
+}

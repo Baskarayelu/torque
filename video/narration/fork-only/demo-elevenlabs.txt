@@ -1,4 +1,4 @@
-[thoughtful] Robinhood Chain holds about seven hundred million dollars of U.S.D.G. [pause] But only about one point two million dollars of it is lent against stock tokens... and almost all of that is already borrowed. [intrigued] The demand for leverage on stocks is there. The dollars to fund it are not. [pause] This is Torque. [pause] [serious] Torque is not deployed to mainnet. Everything in this demo runs on a local fork of Robinhood Chain mainnet: the real U.S.D.G., the real Nvidia token, pool and Chainlink feed... with test wallets.
+[thoughtful] Robinhood Chain holds about seven hundred million dollars of U.S.D.G. [pause] But only about one point five million dollars of it is lent against stock tokens... and almost all of that is already borrowed. [intrigued] The demand for leverage on stocks is there. The dollars to fund it are not. [pause] This is Torque. [pause] [serious] Torque is not deployed to mainnet. Everything in this demo runs on a local fork of Robinhood Chain mainnet: the real U.S.D.G., the real Nvidia token, pool and Chainlink feed... with test wallets.
 
 [long pause]
 

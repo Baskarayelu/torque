@@ -1,12 +1,12 @@
 # TORQUE: knock-out leverage on NVDA, settled in USDG on Robinhood Chain
 
-**Robinhood Chain holds $700M of USDG. Only $1.24M of it is lent against stock tokens, and 98% of that is already borrowed.**
+**Robinhood Chain holds $700.7M of USDG. Only $1.51M of it is lent against stock tokens, and 96.6% of that is already borrowed** (block 78,677,903).
 
-Read from Robinhood Chain mainnet at block 78,338,439 (2026-10-02 15:28 UTC):
-- USDG `totalSupply` is $700.1M.
-- Morpho Blue (`0x9D53…1010`) has 303 markets. 171 take a Robinhood Stock Token as collateral. The 167 of those that lend USDG hold $1,239,258 supplied and $1,215,286 borrowed (98.1%); the other 4 lend WETH.
-- The largest NVDA market has $529,096 supplied and is 100% borrowed.
-- Reproducible: [research/chain_snapshot.py](research/chain_snapshot.py) wrote [research/chain-snapshot-2026-10-02.json](research/chain-snapshot-2026-10-02.json) from the market list in [research/](research/).
+Read from Robinhood Chain mainnet at block 78,677,903 (2026-10-03 00:58 UTC):
+- USDG `totalSupply` is $700.7M.
+- Morpho Blue (`0x9D53…1010`) has 303 markets. 171 take a Robinhood Stock Token as collateral. The 167 of those that lend USDG hold $1,507,386 supplied and $1,456,597 borrowed (96.6%); the other 4 lend WETH.
+- The largest NVDA market has $623,355 supplied and is 98.5% borrowed.
+- Reproducible: [research/chain_snapshot.py](research/chain_snapshot.py) wrote [research/chain-snapshot-2026-10-03.json](research/chain-snapshot-2026-10-03.json) (an earlier read at block 78,338,439 is kept as [chain-snapshot-2026-10-02.json](research/chain-snapshot-2026-10-02.json); the figures move as markets do) from the market list in [research/](research/).
 
 <!-- deployment:status -->
 > **Status: live on Robinhood Chain mainnet.** TorqueMarket [`0xbee6Da89F879B018Fea5d7A78311db720B9D8096`](https://robinhoodchain.blockscout.com/address/0xbee6Da89F879B018Fea5d7A78311db720B9D8096) and TorqueVault [`0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf`](https://robinhoodchain.blockscout.com/address/0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf), deployed at block 78,466,999 on 2026-10-02 19:04 UTC and source-verified on Sourcify. Dashboard: [app.torque.0xo.in](https://app.torque.0xo.in).
@@ -86,7 +86,7 @@ RH_RPC_URL=<rpc> forge test --match-path "test/fork/*"  # against Robinhood Chai
 
 ## Prior art
 
-On-chain, the existing route to leverage on stock tokens is borrowing USDG on Morpho against stock collateral and looping it. That supply is small ($1.24M) and 98% borrowed, so there is little left to borrow. Positions there can be liquidated in the usual lending-market way.
+On-chain, the existing route to leverage on stock tokens is borrowing USDG on Morpho against stock collateral and looping it. That supply is small ($1.51M at block 78,677,903) and 96.6% borrowed, so there is little left to borrow. Positions there can be liquidated in the usual lending-market way.
 
 In this buildathon, two entries offer leverage on stock tokens. We read their code and checked their contracts on chain on 2026-10-01:
 

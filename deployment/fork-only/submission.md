@@ -12,7 +12,7 @@ Knock-out leverage on NVDA, settled in USDG on Robinhood Chain. The most you can
 Not deployed to mainnet. The contracts are built and tested against Robinhood Chain mainnet state: six fork tests on the live USDG, NVDA, pool and Chainlink feed, and a full rehearsal on a local fork of mainnet (block {{forkBlockFmt}}, {{forkDate}}) using the same deploy script, the dashboard and real transactions. The rehearsal log is in the repo.
 
 ## Description
-Robinhood Chain holds $700M of USDG. Only $1.24M of it is lent against stock tokens, and 98% of that is already borrowed: people want leverage on stocks, and the dollars to fund it are not there.
+At Robinhood Chain block 78,677,903, there is $700.7M of USDG on the chain. Only $1.51M of it is lent against stock tokens, and 96.6% of that is already borrowed: people want leverage on stocks, and the dollars to fund it are not there.
 
 TORQUE brings its own. Pick NVDA, choose 2–5× and pay in USDG. A USDG LP vault lends the rest, the whole position is bought as real NVDA in the on-chain pool and held by the contract, and the position has a knock-out level 5% above the price where it is worth zero. If Chainlink prints at that level, anyone can knock it out: the vault is repaid first and the trader claims what is left. There are no margin calls, and the trader can never lose more than the margin.
 

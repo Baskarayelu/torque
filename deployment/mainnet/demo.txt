@@ -1,24 +1,30 @@
-## hero
-[thoughtful] Robinhood Chain holds about seven hundred million dollars of U.S.D.G. [pause] But only about one point two million dollars of it is lent against stock tokens... and almost all of that is already borrowed. [intrigued] The demand for leverage on stocks is there. The dollars to fund it are not. [pause] This is Torque.
+## s01
+[Quiet, measured narration] Robinhood Chain holds seven hundred point seven million dollars of U.S.D.G. ... Only one point five one million of it is lent against stock tokens... and ninety-six point six percent of that is borrowed. The Nvidia market: ninety-eight and a half percent used. [lower, thoughtful] People want leverage on stocks. The dollars aren't there. ... This is Torque...
 
-## checks
-[content] Before Torque does anything, it runs two safety checks. [pause] Chainlink's Nvidia price has to be fresh... and the Nvidia pool's own thirty-minute average has to agree with it, within one and a half percent. [pause] Right now, both pass.
+## s02
+[measured] Before anything runs, two checks. ... Chainlink's Nvidia price must be fresh. It only prints when Nvidia moves, so it's hours old... and inside the twelve-hour limit. ... And the Uniswap pool's thirty-minute average must agree, within one and a half percent. ... Both pass...
 
-## lp
-[content] First, liquidity. [pause] The vault already holds twenty dollars of U.S.D.G.... its hard cap for the buildathon. [pause] I try to add one cent more... and the contract refuses it.
+## s03
+[casual] Loans come from a vault of real U.S.D.G., capped at twenty dollars for the buildathon... and full. ... One more dollar? [Pause, dry amusement] The contract says no... and the dashboard says why...
 
-## quote
-[thoughtful] Now, a trade. [pause] Two dollars of margin, at five times leverage, buys about ten dollars of real Nvidia. The vault lends the rest. [pause] The quote shows the price where the position is worth zero... and the knock-out level, five percent above it. [slowly] The most I can lose is my two dollars.
+## s04
+[measured] Now, a trade. Two dollars of margin at five times controls about ten dollars of Nvidia. The vault lends the rest. ... Here's where it would be worth zero... and the knock-out, five percent above. ... [lower, thoughtful] The most I can lose... is two dollars...
 
-## open
-[snappy] I open it. [pause] The contract buys real Nvidia in the Uniswap pool, within one percent of Chainlink's price... and holds it as the hedge.
+## s05
+[casual] I open it. ... The contract buys real Nvidia in the Uniswap pool, and keeps it. ... What the market holds matches what the position is owed... one to one...
 
-## position
-[content] Here's the position, with its knock-out level and live profit and loss. [pause] If Chainlink prints at or below that level, anyone can close it out... and the vault is repaid first.
+## s06
+[measured] The live position: knock-out level, distance, profit and loss. ... If Chainlink prints at that level, anyone can close it... not only me...
 
-## close
-[content] Closing sells the Nvidia back into the pool. [pause] The vault is repaid in full... and the rest comes back to me in U.S.D.G.
+## s07
+[casual] Closing sells the Nvidia back into the pool. ... The vault is repaid first, in full... and the rest comes back to me in U.S.D.G...
 
-## end
-[proud] No admin key. No pause switch. No upgrades. [pause] Margin, liquidity and payouts are all Paxos U.S.D.G., on Robinhood Chain mainnet. [pause] The code, the spec, and every test are open on GitHub.
+## s08
+[lower, thoughtful] And when Torque can't be safe, it stops. ... Over the weekend, Chainlink freezes. Ask the contract to open a position... and it refuses, with the reason: the price is stale...
+
+## s09
+[measured] No admin key. No pause switch. No upgrades. ... Both contracts are verified on Sourcify... and every transaction here is on the explorer...
+
+## s10
+[casual] Everything else is in the docs, at torque dot zero x o dot in, slash docs.
 

@@ -73,6 +73,11 @@ p { margin: 8px 0 0; }
 .main { display: grid; gap: 20px; max-width: 1180px; padding: 24px; }
 .env-banner { padding: 10px 24px; background: var(--panel2); border-bottom: 1px solid var(--accent); font-weight: 600; font-size: 13px; }
 .legend { margin: 0; }
+.foot-links { display: flex; gap: 16px; }
+.foot-links a { color: var(--muted); }
+.foot-links a:hover { color: var(--fg); }
+.connect-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.connect-row p { margin: 0; }
 
 /* controls */
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 10px; font: 600 14px Inter, sans-serif; cursor: pointer; border: 1px solid transparent; }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseUnits } from "ethers";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount, useConfig, useDisconnect, useSwitchChain } from "wagmi";
 import { ethersSigner, makeChain, ThemedRainbowKit } from "./wallet";
 import { isDeployed, makeReader, P, payoffAt, quote, REASONS, revertName, writers, type Config, type Position, type Snapshot } from "./chain";
@@ -44,20 +44,42 @@ function Logo() {
 }
 
 export default function App({ cfg }: { cfg: Config }) {
+  const [theme, setTheme] = useState<string | null>(() => document.documentElement.dataset.theme ?? null);
+  const chain = useMemo(() => makeChain(cfg), [cfg]);
+  const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const toggleTheme = () => {
+    const current = theme ?? (sysDark ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem("torque-theme", next);
+    } catch {
+      /* storage unavailable */
+    }
+    setTheme(next);
+  };
+  return (
+    <ThemedRainbowKit dark={(theme ?? (sysDark ? "dark" : "light")) === "dark"} chain={chain}>
+      <Dashboard cfg={cfg} toggleTheme={toggleTheme} />
+    </ThemedRainbowKit>
+  );
+}
+
+function Dashboard({ cfg, toggleTheme }: { cfg: Config; toggleTheme: () => void }) {
   const deployed = isDeployed(cfg);
+  const { openConnectModal } = useConnectModal();
+  const connect = () => openConnectModal?.();
   const reader = useMemo(() => makeReader(cfg), [cfg]);
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const wagmi = useConfig();
   const { address } = useAccount();
   const account = address ?? null;
-  const chain = useMemo(() => makeChain(cfg), [cfg]);
   const signer = () => ethersSigner(wagmi, cfg.chainId);
   const [drawer, setDrawer] = useState(false);
   const [margin, setMargin] = useState("2");
   const [lev, setLev] = useState(5);
   const [lpAmt, setLpAmt] = useState("5");
   const [msg, setMsg] = useState<Record<string, string>>({});
-  const [theme, setTheme] = useState<string | null>(() => document.documentElement.dataset.theme ?? null);
   const [path, setPath] = useState(initialPath);
   const page = PAGES.find((p) => p.path === path);
   const on = (p: PagePath) => path === p;
@@ -101,19 +123,6 @@ export default function App({ cfg }: { cfg: Config }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const toggleTheme = () => {
-    const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const current = theme ?? (sysDark ? "dark" : "light");
-    const next = current === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem("torque-theme", next);
-    } catch {
-      /* storage unavailable */
-    }
-    setTheme(next);
-  };
-
   const run = async (key: string, fn: () => Promise<{ hash: string; wait: () => Promise<unknown> }>) => {
     try {
       setMsg((m) => ({ ...m, [key]: "Confirm in your wallet…" }));
@@ -149,6 +158,14 @@ export default function App({ cfg }: { cfg: Config }) {
           : !account
             ? "Connect a wallet to trade."
             : "";
+
+  // Why each action is unavailable, in plain words; "" means available.
+  const paused = !!price && !price.feedFresh;
+  const loansOpen = (snap?.positions?.length ?? 0) > 0;
+  const vaultFull = !!snap?.vault && snap.vault.assets >= P.VAULT_CAP;
+  const depositWhy = !deployed ? "not deployed." : !price ? "reading the chain…" : paused ? "paused with the price (safety check)." : !price.poolAgrees ? "waits until the pool agrees with Chainlink again." : vaultFull ? `the vault is at its $${P.VAULT_CAP} cap.` : "";
+  const withdrawWhy = !deployed ? "not deployed." : loansOpen && !checksOk ? "waits while loans are open and a safety check is failing; reopens with the next good price." : !snap?.share ? "you have no share in the vault." : "";
+  const claimWhy = !deployed ? "Not deployed." : !account ? "Connect a wallet to see and claim a knock-out residual." : !snap?.claimable ? "Nothing to claim: no knocked-out position has left you a residual." : "";
 
   const openPos = () =>
     run("open", async () => {
@@ -206,9 +223,7 @@ export default function App({ cfg }: { cfg: Config }) {
     </div>
   );
 
-  const sysDark = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
   return (
-    <ThemedRainbowKit dark={(theme ?? (sysDark ? "dark" : "light")) === "dark"} chain={chain}>
     <div className="shell">
       <aside className="sidebar">
         <a className="brand" href={cfg.landing}>
@@ -218,9 +233,7 @@ export default function App({ cfg }: { cfg: Config }) {
         {nav()}
         <div className="sidebar-foot">
           {netCard}
-          <a className="muted small" href={cfg.repo}>
-            Docs and source
-          </a>
+          <FootLinks cfg={cfg} />
         </div>
       </aside>
 
@@ -292,10 +305,14 @@ export default function App({ cfg }: { cfg: Config }) {
                 <div className="strong"><dt>Knock-out level</dt><dd className="mono accent">{price ? `${usd(qt.knockOut)} · ${pct(qt.knockOut / price.feed - 1)}` : DASH}</dd></div>
                 <div className="strong"><dt>Most you can lose</dt><dd className="mono">{usd(m)}</dd></div>
               </dl>
-              <button type="button" className="btn btn-accent wide" disabled={!!blocker || m < P.MIN_MARGIN} onClick={openPos}>
-                {checksOk || !deployed ? "Open long NVDA" : price && !price.feedFresh ? "Paused until NVDA trades again" : "Paused by safety check"}
-              </button>
-              <p className="muted small">{msg.open || blocker || "You confirm two transactions: approve USDG, then open."}</p>
+              {deployed && checksOk && !account ? (
+                <button type="button" className="btn btn-accent wide" onClick={connect}>Connect wallet to open</button>
+              ) : (
+                <button type="button" className="btn btn-accent wide" disabled={!!blocker || m < P.MIN_MARGIN} onClick={openPos}>
+                  {checksOk || !deployed ? "Open long NVDA" : paused ? "Paused until NVDA trades again" : "Paused by safety check"}
+                </button>
+              )}
+              <p className="muted small">{msg.open || (deployed && checksOk && !account ? "Any wallet works: browser extension, or a phone wallet by QR code." : blocker) || (m < P.MIN_MARGIN ? `The minimum margin is ${P.MIN_MARGIN} USDG.` : "You confirm two transactions: approve USDG, then open.")}</p>
             </div>
             <div className="card">
               <h3>Your payoff</h3>
@@ -311,7 +328,10 @@ export default function App({ cfg }: { cfg: Config }) {
             {!deployed ? (
               <p className="muted">{DASH} No positions: the contracts are not deployed to mainnet.</p>
             ) : !account ? (
-              <p className="muted">Connect a wallet to see your positions.</p>
+              <div className="connect-row">
+                <p className="muted">Connect a wallet to see your positions.</p>
+                <button type="button" className="btn btn-solid" onClick={connect}>Connect wallet</button>
+              </div>
             ) : mine.length === 0 ? (
               <p className="muted">No open positions.</p>
             ) : (
@@ -342,8 +362,9 @@ export default function App({ cfg }: { cfg: Config }) {
             )}
             <div className="claim-row">
               <span>Knock-out residual to claim: <b className="mono">{usd(snap?.claimable)}</b></span>
-              <button type="button" className="btn btn-line" disabled={!deployed || !account || !snap?.claimable} onClick={() => run("mine", async () => writers(cfg, await signer()).market.claim())}>Claim</button>
+              <button type="button" className="btn btn-line" disabled={!!claimWhy} aria-describedby="claim-why" onClick={() => run("mine", async () => writers(cfg, await signer()).market.claim())}>Claim</button>
             </div>
+            {claimWhy && <p id="claim-why" className="muted small">{claimWhy}</p>}
             {msg.mine && <p className="muted small">{msg.mine}</p>}
           </section>
           )}
@@ -370,11 +391,25 @@ export default function App({ cfg }: { cfg: Config }) {
               <h3>Provide liquidity</h3>
               <label htmlFor="lp-amt" className="field-label">Amount (USDG)</label>
               <input id="lp-amt" className="input mono" inputMode="decimal" value={lpAmt} onChange={(e) => setLpAmt(e.target.value)} />
-              <div className="two">
-                <button type="button" className="btn btn-accent" disabled={!!blocker} onClick={() => lp("dep")}>Deposit</button>
-                <button type="button" className="btn btn-line" disabled={!deployed || !account} onClick={() => lp("wd")}>Withdraw</button>
-              </div>
-              <p className="muted small">{msg.lp || "Withdrawals come from idle cash. With no open positions you can always withdraw, even if the feed is down."}</p>
+              {deployed && !account ? (
+                <>
+                  <button type="button" className="btn btn-accent wide" onClick={connect}>Connect wallet to deposit or withdraw</button>
+                  {depositWhy && <p className="muted small">Deposit: {depositWhy}</p>}
+                </>
+              ) : (
+                <>
+                  <div className="two">
+                    <button type="button" className="btn btn-accent" disabled={!!depositWhy} aria-describedby="lp-why" onClick={() => lp("dep")}>Deposit</button>
+                    <button type="button" className="btn btn-line" disabled={!!withdrawWhy} aria-describedby="lp-why" onClick={() => lp("wd")}>Withdraw</button>
+                  </div>
+                  <div id="lp-why">
+                    {depositWhy && <p className="muted small">Deposit: {depositWhy}</p>}
+                    {withdrawWhy && <p className="muted small">Withdraw: {withdrawWhy}</p>}
+                  </div>
+                </>
+              )}
+              {msg.lp && <p className="small strong">{msg.lp}</p>}
+              <p className="muted small">Withdrawals come from idle cash. While no loans are open you can withdraw at any time, even while the price is paused.</p>
             </div>
           </section>
           )}
@@ -442,9 +477,13 @@ export default function App({ cfg }: { cfg: Config }) {
                       <span data-label="Owner" className="mono muted">{short(p.owner)}</span>
                       <span data-label="Size" className="mono">{p.q.toFixed(5)} NVDA</span>
                       <span data-label="Knock-out" className="mono">{usd(p.barrier)}</span>
-                      <span data-label="Status" className={ok ? "accent strong" : "muted"}>{ok ? "Eligible: price at or below knock-out" : `Not eligible · ${dist === null ? DASH : pct(dist)} away`}</span>
+                      <span data-label="Status" className={ok ? "accent strong" : "muted"}>{ok ? "Eligible: price at or below knock-out" : paused ? "Waiting for a fresh price: knock-outs need one" : `Not eligible · ${dist === null ? DASH : pct(dist)} above the knock-out`}</span>
                       <span className="cell-btn">
-                        <button type="button" className={"btn " + (ok ? "btn-accent" : "btn-line")} disabled={!ok || !account} onClick={() => run("all", async () => writers(cfg, await signer()).market.knockOut(p.id))}>Knock out</button>
+                        {ok && !account ? (
+                          <button type="button" className="btn btn-accent" onClick={connect}>Connect to knock out</button>
+                        ) : (
+                          <button type="button" className={"btn " + (ok ? "btn-accent" : "btn-line")} disabled={!ok} title={ok ? undefined : "Available when Chainlink prints at or below this position's knock-out level"} onClick={() => run("all", async () => writers(cfg, await signer()).market.knockOut(p.id))}>Knock out</button>
+                        )}
                       </span>
                     </div>
                   );
@@ -478,14 +517,13 @@ export default function App({ cfg }: { cfg: Config }) {
             <div className="sidebar-foot">
               {netCard}
               <button type="button" className="btn btn-line" onClick={toggleTheme}>Toggle colour theme</button>
-              <a className="muted small" href={cfg.repo}>Docs and source</a>
+              <FootLinks cfg={cfg} />
             </div>
           </div>
           <button type="button" className="drawer-scrim" aria-label="Close menu" onClick={() => setDrawer(false)} />
         </div>
       )}
     </div>
-    </ThemedRainbowKit>
   );
 }
 
@@ -576,6 +614,15 @@ function WalletButton({ cfg }: { cfg: Config }) {
 }
 
 /** A failing check shows red ✕, except where failing is the designed pause (a quiet feed): then amber ⏸ with `paused`. */
+function FootLinks({ cfg }: { cfg: Config }) {
+  return (
+    <div className="foot-links small">
+      <a href={`${cfg.landing}/docs`}>Docs</a>
+      <a href={cfg.repo}>Source</a>
+    </div>
+  );
+}
+
 function CheckChip({ ok, label, paused }: { ok: boolean | undefined; label: string; paused?: string }) {
   if (ok === false && paused)
     return (

@@ -1,4 +1,4 @@
-import { BrowserProvider, Contract, Interface, JsonRpcProvider, type Signer } from "ethers";
+import { Contract, Interface, JsonRpcProvider, type Signer } from "ethers";
 
 export type Config = {
   environment: "mainnet" | "fork-rehearsal";
@@ -262,26 +262,7 @@ export function payoffAt(x: number, margin: number, lev: number, entry: number) 
   return Math.max(q * settle - borrow, 0) - margin;
 }
 
-// ---------------------------------------------------------------- wallet
-
-export async function connectWallet(cfg: Config): Promise<{ signer: Signer; account: string }> {
-  const eth = (window as unknown as { ethereum?: { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
-  if (!eth) throw new Error("No browser wallet found.");
-  const hex = "0x" + cfg.chainId.toString(16);
-  try {
-    await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hex }] });
-  } catch (e) {
-    if ((e as { code?: number }).code === 4902) {
-      await eth.request({
-        method: "wallet_addEthereumChain",
-        params: [{ chainId: hex, chainName: cfg.chainName, nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: [cfg.rpc], blockExplorerUrls: [cfg.explorer] }],
-      });
-    } else throw e;
-  }
-  const bp = new BrowserProvider(eth);
-  const signer = await bp.getSigner();
-  return { signer, account: await signer.getAddress() };
-}
+// ---------------------------------------------------------------- writes
 
 // Every write sends with 30% gas headroom: the estimate runs in the current block, but the transaction lands in a later
 // one, where interest accrual writes storage and costs more. With an exact estimate, a deposit can run out of gas.

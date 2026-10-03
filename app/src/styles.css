@@ -51,12 +51,24 @@ p { margin: 8px 0 0; }
 .nav { display: flex; flex-direction: column; gap: 2px; }
 .nav a { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: var(--muted); text-decoration: none; }
 .nav a:hover, .nav a:focus-visible { background: var(--panel2); color: var(--fg); }
+.nav a[aria-current="page"] { background: var(--panel2); color: var(--fg); font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
 .sidebar-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
 .net { display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 12.5px; }
 .col { min-width: 0; }
 .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 14px; height: 64px; padding: 0 24px; background: var(--bg); border-bottom: 1px solid var(--border); }
 .topbar-status { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .connect { margin-left: auto; }
+.btn-warn { background: var(--panel); color: var(--fg); border-color: var(--bad); }
+.caret { margin-left: 8px; font-size: 11px; }
+.wallet { position: relative; margin-left: auto; }
+.wallet .connect { margin-left: 0; }
+.wallet-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: 340px; max-width: calc(100vw - 24px); display: grid; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25); }
+.wm-sec { display: grid; gap: 8px; padding: 14px; border-bottom: 1px solid var(--border); }
+.wm-sec:last-child { border-bottom: none; }
+.wm-addr { font-size: 12px; overflow-wrap: anywhere; line-height: 1.45; }
+.wallet-menu .two { margin-top: 2px; }
+.wallet-menu a.btn { text-decoration: none; }
+.wallet-menu .btn { padding: 0 10px; white-space: nowrap; }
 .main { display: grid; gap: 20px; max-width: 1180px; padding: 24px; }
 .env-banner { padding: 10px 24px; background: var(--panel2); border-bottom: 1px solid var(--accent); font-weight: 600; font-size: 13px; }
 .legend { margin: 0; }

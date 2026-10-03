@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { parseUnits, type Signer } from "ethers";
-import { connectWallet, isDeployed, makeReader, P, payoffAt, quote, REASONS, revertName, writers, type Config, type Position, type Snapshot } from "./chain";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { parseUnits } from "ethers";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount, useConfig, useDisconnect, useSwitchChain } from "wagmi";
+import { ethersSigner, makeChain, ThemedRainbowKit } from "./wallet";
+import { isDeployed, makeReader, P, payoffAt, quote, REASONS, revertName, writers, type Config, type Position, type Snapshot } from "./chain";
 
 const DASH = "—";
 const usd = (x: number | null | undefined, d = 2) =>
@@ -9,13 +12,28 @@ const pct = (x: number, d = 1) => (x < 0 ? "−" : "") + Math.abs(x * 100).toFix
 const short = (a: string) => a.slice(0, 6) + "…" + a.slice(-4);
 const ago = (s: number) => (s < 90 ? `${Math.round(s)} s` : s < 5400 ? `${Math.round(s / 60)} min` : `${(s / 3600).toFixed(1)} h`);
 
-const SECTIONS = [
-  ["open", "Open a position"],
-  ["mine", "My positions"],
-  ["vault", "LP vault"],
-  ["solvency", "Solvency board"],
-  ["all", "All positions"],
+// Each sidebar section is its own page, so it can be linked, opened in a tab, and reached with the back button.
+const PAGES = [
+  { path: "/open", label: "Open a position", legacy: "#open" },
+  { path: "/my-positions", label: "My positions", legacy: "#mine" },
+  { path: "/lp-vault", label: "LP vault", legacy: "#vault" },
+  { path: "/solvency-board", label: "Solvency board", legacy: "#solvency" },
+  { path: "/all-positions", label: "All positions", legacy: "#all" },
 ] as const;
+type PagePath = (typeof PAGES)[number]["path"];
+
+/** The page for the current URL. "/" and the old one-page anchors (/#vault) redirect to their page. */
+function initialPath(): string {
+  const { pathname, hash } = window.location;
+  if (pathname === "/" || pathname === "/index.html") {
+    const to = PAGES.find((p) => p.legacy === hash)?.path ?? "/open";
+    window.history.replaceState(null, "", to);
+    return to;
+  }
+  const clean = pathname.replace(/\/+$/, "");
+  if (clean !== pathname) window.history.replaceState(null, "", clean + hash);
+  return clean;
+}
 
 function Logo() {
   return (
@@ -29,14 +47,39 @@ export default function App({ cfg }: { cfg: Config }) {
   const deployed = isDeployed(cfg);
   const reader = useMemo(() => makeReader(cfg), [cfg]);
   const [snap, setSnap] = useState<Snapshot | null>(null);
-  const [account, setAccount] = useState<string | null>(null);
-  const [signer, setSigner] = useState<Signer | null>(null);
+  const wagmi = useConfig();
+  const { address } = useAccount();
+  const account = address ?? null;
+  const chain = useMemo(() => makeChain(cfg), [cfg]);
+  const signer = () => ethersSigner(wagmi, cfg.chainId);
   const [drawer, setDrawer] = useState(false);
   const [margin, setMargin] = useState("2");
   const [lev, setLev] = useState(5);
   const [lpAmt, setLpAmt] = useState("5");
   const [msg, setMsg] = useState<Record<string, string>>({});
   const [theme, setTheme] = useState<string | null>(() => document.documentElement.dataset.theme ?? null);
+  const [path, setPath] = useState(initialPath);
+  const page = PAGES.find((p) => p.path === path);
+  const on = (p: PagePath) => path === p;
+
+  useEffect(() => {
+    const back = () => setPath(window.location.pathname);
+    window.addEventListener("popstate", back);
+    return () => window.removeEventListener("popstate", back);
+  }, []);
+  useEffect(() => {
+    document.title = (page ? page.label : "Not found") + " · TORQUE Dashboard";
+  }, [page]);
+
+  // Plain left clicks navigate in place; modified clicks (new tab, new window) fall through to the real link.
+  const go = (e: React.MouseEvent<HTMLAnchorElement>, to: string, after?: () => void) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    if (to !== window.location.pathname) window.history.pushState(null, "", to);
+    setPath(to);
+    window.scrollTo(0, 0);
+    after?.();
+  };
 
   const refresh = useCallback(async () => {
     try {
@@ -69,16 +112,6 @@ export default function App({ cfg }: { cfg: Config }) {
       /* storage unavailable */
     }
     setTheme(next);
-  };
-
-  const connect = async () => {
-    try {
-      const w = await connectWallet(cfg);
-      setSigner(w.signer);
-      setAccount(w.account);
-    } catch (e) {
-      setMsg((m) => ({ ...m, wallet: (e as Error).message }));
-    }
   };
 
   const run = async (key: string, fn: () => Promise<{ hash: string; wait: () => Promise<unknown> }>) => {
@@ -119,7 +152,7 @@ export default function App({ cfg }: { cfg: Config }) {
 
   const openPos = () =>
     run("open", async () => {
-      const w = writers(cfg, signer!);
+      const w = writers(cfg, await signer());
       const amount = parseUnits(m.toFixed(6), 6);
       await w.ensure(cfg.MARKET!, amount);
       const minOut = parseUnits(((qt.notional / price!.feed) * 0.995).toFixed(18), 18);
@@ -127,7 +160,7 @@ export default function App({ cfg }: { cfg: Config }) {
     });
   const lp = (kind: "dep" | "wd") =>
     run("lp", async () => {
-      const w = writers(cfg, signer!);
+      const w = writers(cfg, await signer());
       const amount = parseUnits((parseFloat(lpAmt) || 0).toFixed(6), 6);
       if (kind === "dep") {
         await w.ensure(cfg.VAULT!, amount);
@@ -151,9 +184,9 @@ export default function App({ cfg }: { cfg: Config }) {
   );
   const nav = (onPick?: () => void) => (
     <nav aria-label="Sections" className="nav">
-      {SECTIONS.map(([id, label]) => (
-        <a key={id} href={`#${id}`} onClick={onPick}>
-          {label}
+      {PAGES.map((p) => (
+        <a key={p.path} href={p.path} aria-current={path === p.path ? "page" : undefined} onClick={(e) => go(e, p.path, onPick)}>
+          {p.label}
         </a>
       ))}
     </nav>
@@ -173,7 +206,9 @@ export default function App({ cfg }: { cfg: Config }) {
     </div>
   );
 
+  const sysDark = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
   return (
+    <ThemedRainbowKit dark={(theme ?? (sysDark ? "dark" : "light")) === "dark"} chain={chain}>
     <div className="shell">
       <aside className="sidebar">
         <a className="brand" href={cfg.landing}>
@@ -210,9 +245,7 @@ export default function App({ cfg }: { cfg: Config }) {
               <path d="M9 2.5a6.5 6.5 0 0 1 0 13z" fill="currentColor" />
             </svg>
           </button>
-          <button type="button" className="btn btn-solid connect" onClick={connect}>
-            {account ? short(account) : "Connect wallet"}
-          </button>
+          <WalletButton cfg={cfg} />
         </header>
 
         {cfg.environment === "fork-rehearsal" && (
@@ -232,6 +265,7 @@ export default function App({ cfg }: { cfg: Config }) {
           </div>
           {!deployed && <p className="muted small legend">— marks a TORQUE value. The contracts are not deployed to mainnet, so there is none to read. Quotes use TORQUE's own formulas at the live Chainlink price.</p>}
 
+          {on("/open") && (
           <section id="open" aria-labelledby="h-open" className="grid-open">
             <div className="card">
               <h2 id="h-open">Open a long on NVDA</h2>
@@ -269,7 +303,9 @@ export default function App({ cfg }: { cfg: Config }) {
               <Payoff margin={m} lev={lev} entry={price?.feed ?? 0} />
             </div>
           </section>
+          )}
 
+          {on("/my-positions") && (
           <section id="mine" aria-labelledby="h-mine" className="card">
             <h2 id="h-mine">My positions</h2>
             {!deployed ? (
@@ -297,7 +333,7 @@ export default function App({ cfg }: { cfg: Config }) {
                       <span data-label="Knock-out" className="mono">{usd(p.barrier)}</span>
                       <span data-label="Distance" className="mono">{dist === null ? DASH : pct(dist)}</span>
                       <span className="cell-btn">
-                        <button type="button" className="btn btn-line" onClick={() => run("mine", () => writers(cfg, signer!).market.close(p.id, 0))}>Close</button>
+                        <button type="button" className="btn btn-line" onClick={() => run("mine", async () => writers(cfg, await signer()).market.close(p.id, 0))}>Close</button>
                       </span>
                     </div>
                   );
@@ -306,11 +342,13 @@ export default function App({ cfg }: { cfg: Config }) {
             )}
             <div className="claim-row">
               <span>Knock-out residual to claim: <b className="mono">{usd(snap?.claimable)}</b></span>
-              <button type="button" className="btn btn-line" disabled={!deployed || !account || !snap?.claimable} onClick={() => run("mine", () => writers(cfg, signer!).market.claim())}>Claim</button>
+              <button type="button" className="btn btn-line" disabled={!deployed || !account || !snap?.claimable} onClick={() => run("mine", async () => writers(cfg, await signer()).market.claim())}>Claim</button>
             </div>
             {msg.mine && <p className="muted small">{msg.mine}</p>}
           </section>
+          )}
 
+          {on("/lp-vault") && (
           <section id="vault" aria-labelledby="h-vault" className="grid-vault">
             <div className="card">
               <h2 id="h-vault">LP vault</h2>
@@ -339,7 +377,9 @@ export default function App({ cfg }: { cfg: Config }) {
               <p className="muted small">{msg.lp || "Withdrawals come from idle cash. With no open positions you can always withdraw, even if the feed is down."}</p>
             </div>
           </section>
+          )}
 
+          {on("/solvency-board") && (
           <section id="solvency" aria-labelledby="h-solv" className="card">
             <div className="row-between wrap">
               <h2 id="h-solv">Solvency board</h2>
@@ -370,7 +410,9 @@ export default function App({ cfg }: { cfg: Config }) {
               </div>
             </div>
           </section>
+          )}
 
+          {on("/all-positions") && (
           <section id="all" aria-labelledby="h-all" className="card">
             <h2 id="h-all">All open positions</h2>
             <p className="muted small">Knock-outs are permissionless. When Chainlink prints at or below a position's knock-out level, anyone can trigger it here. The vault is repaid first; the trader can claim what is left.</p>
@@ -394,7 +436,7 @@ export default function App({ cfg }: { cfg: Config }) {
                       <span data-label="Knock-out" className="mono">{usd(p.barrier)}</span>
                       <span data-label="Status" className={ok ? "accent strong" : "muted"}>{ok ? "Eligible: price at or below knock-out" : `Not eligible · ${dist === null ? DASH : pct(dist)} away`}</span>
                       <span className="cell-btn">
-                        <button type="button" className={"btn " + (ok ? "btn-accent" : "btn-line")} disabled={!ok || !account} onClick={() => run("all", () => writers(cfg, signer!).market.knockOut(p.id))}>Knock out</button>
+                        <button type="button" className={"btn " + (ok ? "btn-accent" : "btn-line")} disabled={!ok || !account} onClick={() => run("all", async () => writers(cfg, await signer()).market.knockOut(p.id))}>Knock out</button>
                       </span>
                     </div>
                   );
@@ -403,7 +445,15 @@ export default function App({ cfg }: { cfg: Config }) {
             )}
             {msg.all && <p className="muted small">{msg.all}</p>}
           </section>
-          {msg.wallet && <p className="muted small">{msg.wallet}</p>}
+          )}
+
+          {!page && (
+            <section className="card" aria-labelledby="h-404">
+              <h2 id="h-404">No page here</h2>
+              <p className="muted">There is no dashboard page at <span className="mono">{path}</span>.</p>
+              <p><a href="/open" onClick={(e) => go(e, "/open")}>Go to Open a position</a></p>
+            </section>
+          )}
         </main>
       </div>
 
@@ -427,6 +477,93 @@ export default function App({ cfg }: { cfg: Config }) {
         </div>
       )}
     </div>
+    </ThemedRainbowKit>
+  );
+}
+
+/** Not connected: opens the wallet modal (installed wallets, install links, WalletConnect QR).
+ *  Connected: a dropdown with the full address, copy, explorer link, the network (with a switch) and disconnect. */
+function WalletButton({ cfg }: { cfg: Config }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { address, chainId } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { switchChain, isPending: switching } = useSwitchChain();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => ref.current && !ref.current.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", away);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("mousedown", away);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+  useEffect(() => {
+    if (!address) setOpen(false);
+  }, [address]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(address!);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      window.prompt("Copy the address:", address!);
+    }
+  };
+  const right = chainId === cfg.chainId;
+
+  return (
+    <ConnectButton.Custom>
+      {({ account, openConnectModal, openChainModal, mounted }) =>
+        !account ? (
+          <button type="button" className="btn btn-solid connect" disabled={!mounted} onClick={openConnectModal}>
+            Connect wallet
+          </button>
+        ) : (
+          <div className="wallet" ref={ref}>
+            <button type="button" className={"btn connect " + (right ? "btn-solid" : "btn-warn")} aria-haspopup="true" aria-expanded={open} aria-controls="wallet-menu" onClick={() => setOpen((o) => !o)}>
+              {!right && <span aria-hidden="true">⚠&nbsp;</span>}
+              {account.displayName}
+              <span aria-hidden="true" className="caret">▾</span>
+            </button>
+            {open && (
+              <div id="wallet-menu" className="wallet-menu" role="group" aria-label="Wallet">
+                <div className="wm-sec">
+                  <span className="muted small">Connected address</span>
+                  <span className="mono wm-addr">{address}</span>
+                  <div className="two">
+                    <button type="button" className="btn btn-line" onClick={copy}>{copied ? "Copied ✓" : "Copy address"}</button>
+                    <a className="btn btn-line" href={`${cfg.explorer}/address/${address}`} target="_blank" rel="noreferrer">View on explorer ↗</a>
+                  </div>
+                </div>
+                <div className="wm-sec">
+                  <span className="muted small">Network</span>
+                  {right ? (
+                    <span className="strong"><b className="good">●</b> {cfg.chainName} <span className="muted mono">· {cfg.chainId}</span></span>
+                  ) : (
+                    <span className="strong"><b className="bad">●</b> Wrong network <span className="muted mono">· chain {chainId ?? "?"}</span></span>
+                  )}
+                  {right ? (
+                    <button type="button" className="btn btn-line" onClick={() => { setOpen(false); openChainModal(); }}>Switch network</button>
+                  ) : (
+                    <button type="button" className="btn btn-accent" disabled={switching} onClick={() => switchChain({ chainId: cfg.chainId })}>{switching ? "Confirm in your wallet…" : `Switch to ${cfg.chainName}`}</button>
+                  )}
+                  {!right && <span className="muted small">TORQUE runs only on {cfg.chainName}. Trades ask your wallet to switch first.</span>}
+                </div>
+                <div className="wm-sec">
+                  <button type="button" className="btn btn-line" onClick={() => { setOpen(false); disconnect(); }}>Disconnect</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      }
+    </ConnectButton.Custom>
   );
 }
 

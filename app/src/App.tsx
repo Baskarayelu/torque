@@ -143,7 +143,7 @@ export default function App({ cfg }: { cfg: Config }) {
     : !price
       ? "Reading the chain…"
       : !price.feedFresh
-        ? "Paused by safety check: Chainlink has not printed in 12 hours."
+        ? "Chainlink's NVDA price doesn't update while the stock market is closed, and TORQUE won't open a position on a price more than 12 hours old. This is the safety check working, not an outage. Opens resume with the next price."
         : !price.poolAgrees
           ? "Paused by safety check: the pool has moved more than 1.5% from the Chainlink price. Opens resume when they agree."
           : !account
@@ -178,7 +178,7 @@ export default function App({ cfg }: { cfg: Config }) {
   );
   const checkChips = (
     <>
-      <CheckChip ok={price?.feedFresh} label="Fresh price" />
+      <CheckChip ok={price?.feedFresh} label="Fresh price" paused="Price paused" />
       <CheckChip ok={price?.poolAgrees} label="Market agrees" />
     </>
   );
@@ -293,7 +293,7 @@ export default function App({ cfg }: { cfg: Config }) {
                 <div className="strong"><dt>Most you can lose</dt><dd className="mono">{usd(m)}</dd></div>
               </dl>
               <button type="button" className="btn btn-accent wide" disabled={!!blocker || m < P.MIN_MARGIN} onClick={openPos}>
-                {checksOk || !deployed ? "Open long NVDA" : "Paused by safety check"}
+                {checksOk || !deployed ? "Open long NVDA" : price && !price.feedFresh ? "Paused until NVDA trades again" : "Paused by safety check"}
               </button>
               <p className="muted small">{msg.open || blocker || "You confirm two transactions: approve USDG, then open."}</p>
             </div>
@@ -394,8 +394,16 @@ export default function App({ cfg }: { cfg: Config }) {
                   <div className="strong"><dt>Hedged</dt><dd className="mono">{snap?.positions && snap.nvdaHeld !== null ? (snap.nvdaHeld + 1e-9 >= snap.positions.reduce((a, p) => a + p.q, 0) ? "1 : 1 ✓" : "short ✕") : "1 : 1 required"}</dd></div>
                 </div>
               </div>
-              <CheckBox title="Check 1 · Fresh price" ok={price?.feedFresh}>
-                Chainlink printed <b className="mono">{price ? ago(price.feedAge) : DASH}</b> ago. Limit: 12 h.
+              <CheckBox title="Check 1 · Fresh price" ok={price?.feedFresh} pausable>
+                {price && !price.feedFresh ? (
+                  <>
+                    Chainlink last printed <b className="mono">{ago(price.feedAge)}</b> ago. Limit: 12 h. Over weekends and market holidays the feed is quiet: opens and LP deposits pause; closing your position, claiming, and withdrawing while no loans are open still work.
+                  </>
+                ) : (
+                  <>
+                    Chainlink printed <b className="mono">{price ? ago(price.feedAge) : DASH}</b> ago. Limit: 12 h.
+                  </>
+                )}
               </CheckBox>
               <CheckBox title="Check 2 · Market agrees" ok={price?.poolAgrees}>
                 Pool 30-min average <b className="mono">{usd(price?.twap)}</b>, <b className="mono">{price ? (price.deviationBps / 100).toFixed(2) + "%" : DASH}</b> off Chainlink. Band: 1.5%.
@@ -567,7 +575,14 @@ function WalletButton({ cfg }: { cfg: Config }) {
   );
 }
 
-function CheckChip({ ok, label }: { ok: boolean | undefined; label: string }) {
+/** A failing check shows red ✕, except where failing is the designed pause (a quiet feed): then amber ⏸ with `paused`. */
+function CheckChip({ ok, label, paused }: { ok: boolean | undefined; label: string; paused?: string }) {
+  if (ok === false && paused)
+    return (
+      <span className="chip chip-warn">
+        <b>⏸</b> {paused}
+      </span>
+    );
   return (
     <span className={"chip " + (ok === undefined ? "" : ok ? "chip-ok" : "chip-bad")}>
       <b>{ok === undefined ? "…" : ok ? "✓" : "✕"}</b> {label}
@@ -575,12 +590,13 @@ function CheckChip({ ok, label }: { ok: boolean | undefined; label: string }) {
   );
 }
 
-function CheckBox({ title, ok, children }: { title: string; ok: boolean | undefined; children: React.ReactNode }) {
+function CheckBox({ title, ok, pausable, children }: { title: string; ok: boolean | undefined; pausable?: boolean; children: React.ReactNode }) {
+  const paused = ok === false && pausable;
   return (
-    <div className={"tile-box" + (ok === false ? " box-bad" : "")}>
+    <div className={"tile-box" + (paused ? " box-warn" : ok === false ? " box-bad" : "")}>
       <div className="row-between">
         <span className="muted small">{title}</span>
-        <b className={ok === undefined ? "muted" : ok ? "good" : "bad"}>{ok === undefined ? "…" : ok ? "✓ Pass" : "✕ Fail"}</b>
+        <b className={ok === undefined ? "muted" : ok ? "good" : paused ? "warn" : "bad"}>{ok === undefined ? "…" : ok ? "✓ Pass" : paused ? "⏸ Paused" : "✕ Fail"}</b>
       </div>
       <p className="small">{children}</p>
     </div>

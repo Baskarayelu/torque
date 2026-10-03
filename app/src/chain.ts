@@ -18,6 +18,10 @@ export type Config = {
   FEED: string;
 };
 
+/** The dashboard's own reads use VITE_RH_RPC_URL when the build provides one (a key held in the hosting provider's
+ *  environment, never in the repo), and fall back to the public RPC in config.json if it fails. */
+export const readRpcs = (cfg: Config): string[] => [...new Set([import.meta.env.VITE_RH_RPC_URL, cfg.rpc].filter((u): u is string => Boolean(u)))];
+
 export async function loadConfig(): Promise<Config> {
   const res = await fetch("/config.json", { cache: "no-store" });
   return res.json();
@@ -145,7 +149,22 @@ export type Snapshot = {
 };
 
 export function makeReader(cfg: Config) {
-  const provider = new JsonRpcProvider(cfg.rpc, cfg.chainId, { staticNetwork: true });
+  const readers = readRpcs(cfg).map((url) => readerOn(cfg, new JsonRpcProvider(url, cfg.chainId, { staticNetwork: true })));
+  async function snapshot(account: string | null): Promise<Snapshot> {
+    let last: unknown;
+    for (const r of readers) {
+      try {
+        return await r.snapshot(account);
+      } catch (e) {
+        last = e;
+      }
+    }
+    throw last;
+  }
+  return { snapshot, provider: readers[0].provider };
+}
+
+function readerOn(cfg: Config, provider: JsonRpcProvider) {
   const feed = new Contract(cfg.FEED, ABI.feed, provider);
   const pool = new Contract(cfg.POOL, ABI.pool, provider);
   const nvda = new Contract(cfg.NVDA, ABI.erc20, provider);

@@ -7,9 +7,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserProvider, JsonRpcSigner, type Signer } from "ethers";
 import type { ReactNode } from "react";
 import { defineChain, type Chain } from "viem";
-import { createConfig, http, WagmiProvider, type Config as WagmiConfig } from "wagmi";
+import { createConfig, fallback, http, WagmiProvider, type Config as WagmiConfig } from "wagmi";
 import { getConnectorClient, switchChain } from "wagmi/actions";
-import type { Config } from "./chain";
+import { readRpcs, type Config } from "./chain";
 
 // Reown Cloud project for WalletConnect. A public identifier (it ships in every dapp bundle); the project's
 // allowed-domains list, not secrecy, is what restricts it.
@@ -39,7 +39,9 @@ export function makeWagmi(cfg: Config): WagmiConfig {
     ],
     { appName: "TORQUE", appUrl: "https://app.torque.0xo.in", projectId: WALLETCONNECT_PROJECT_ID },
   );
-  return createConfig({ chains: [chain], connectors, transports: { [chain.id]: http(cfg.rpc) }, ssr: false });
+  // App reads go through the private RPC when one is configured, public as fallback. The chain definition a wallet
+  // is offered (makeChain) keeps the public RPC, so a private key never lands in a user's wallet settings.
+  return createConfig({ chains: [chain], connectors, transports: { [chain.id]: fallback(readRpcs(cfg).map((u) => http(u))) }, ssr: false });
 }
 
 const queryClient = new QueryClient();

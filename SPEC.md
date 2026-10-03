@@ -166,5 +166,5 @@ The handler simulates in-session moves, sell-offs, in-session gaps, and weekends
 - **NVDA only, long only.** Shorts are v2 because they need NVDA inventory in the vault.
 - **Corporate actions:** the token's UI multiplier is 1.000775 today, a 0.08% difference from raw units, inside the 1% execution guard. A fork test confirms the feed quotes the price of one raw token. A split during an open position is not handled; corporate-action handling is out of scope for this entry.
 - **No sequencer-uptime feed** is checked. None is known on Robinhood Chain.
-- **Knock-outs need a caller.** There is no keeper reward in v1; we run the keeper.
+- **Knock-outs need a caller.** There is no keeper reward in v1; anyone can run `script/knockout-watcher.sh`.
 - **The 1.5% band and 30-minute window** are calibrated on one week of data, including one calm weekend. A weekend with a large pool move has not been observed in the sample. The unit and invariant tests model one.

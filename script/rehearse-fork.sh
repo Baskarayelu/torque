@@ -3,6 +3,7 @@
 # positions from anvil's public test wallets. Nothing here touches mainnet; the fork runs on 127.0.0.1.
 #
 #   ./script/rehearse-fork.sh up        start the fork, deploy, seed, open two positions, write app/public/config.fork.json
+#   FEED_PRICE=<p> ./script/rehearse-fork.sh up   same, with the test feed installed first (for when the real feed is stale, e.g. a weekend)
 #   ./script/rehearse-fork.sh feed <p>  replace the fork's Chainlink feed with a test feed printing price <p> (USD, e.g. 190.5)
 #   ./script/rehearse-fork.sh down      stop the fork
 set -euo pipefail
@@ -26,6 +27,7 @@ up)
   cast rpc anvil_impersonateAccount $WHALE --rpc-url $A >/dev/null
   cast rpc anvil_setBalance $WHALE 0x56BC75E2D63100000 --rpc-url $A >/dev/null
   for w in $W0 $W1 $W2; do cast send $USDG 'transfer(address,uint256)' $w 40000000 --from $WHALE --unlocked --rpc-url $A >/dev/null; done
+  if [ -n "${FEED_PRICE:-}" ]; then "$0" feed "$FEED_PRICE"; fi
   out=$(SEED_USDG=15000000 forge script script/Deploy.s.sol --rpc-url $A --private-key $K0 --broadcast --slow 2>&1)
   rm -rf broadcast
   MARKET=$(echo "$out" | grep -oE "TorqueMarket 0x[0-9a-fA-F]{40}" | head -1 | awk '{print $2}')

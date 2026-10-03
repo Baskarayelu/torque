@@ -24,6 +24,7 @@ USDG is the whole product: traders post USDG margin, LPs deposit USDG, the vault
 - **Uniswap v3 NVDA/USDG 0.05% pool**: the hedge venue and the 30-minute average (`0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3`).
 - **Robinhood NVDA Stock Token**: the hedge asset (`0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC`).
 - **Sourcify and Blockscout**: source verification (exact match).
+- **Alchemy**: the dashboard's Robinhood Chain mainnet RPC for every read, with an origin-restricted key (the public RPC is the fallback).
 - Morpho Blue: read-only research data for the market gap; not integrated.
 
 ## Deployment status
@@ -43,7 +44,7 @@ Evidence: 9 solvency invariants written before the product code; an adversarial 
 - Landing page: {{landing}}
 - Dashboard: {{dashboard}}
 - Docs: {{landing}}/docs
-- LP backtest, 90 days of real NVDA prices, worst case included: {{landing}}/docs/lp-backtest
+- LP backtest over 90 days of real NVDA prices: LPs +3.25% (14.1% a year) at 5x and 80% utilisation, but the window never tested the floor, so the page also shows the gap sizes at which LPs lose money: {{landing}}/docs/lp-backtest
 - Every mainnet transaction: {{landing}}/docs/deployments
 - Verify every claim yourself, one command each: {{landing}}/docs/verify
 - Demo video: <add link>

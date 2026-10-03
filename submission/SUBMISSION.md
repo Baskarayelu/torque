@@ -51,6 +51,7 @@ Evidence: 9 solvency invariants written before the product code; an adversarial 
 - Docs: https://torque.0xo.in/docs
 - LP backtest, 90 days of real NVDA prices, worst case included: https://torque.0xo.in/docs/lp-backtest
 - Every mainnet transaction: https://torque.0xo.in/docs/deployments
+- Verify every claim yourself, one command each: https://torque.0xo.in/docs/verify
 - Demo video: <add link>
 - Pitch video: <add link>
 

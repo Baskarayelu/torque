@@ -45,6 +45,7 @@ Evidence: 9 solvency invariants written before the product code; an adversarial 
 - Docs: {{landing}}/docs
 - LP backtest, 90 days of real NVDA prices, worst case included: {{landing}}/docs/lp-backtest
 - Every mainnet transaction: {{landing}}/docs/deployments
+- Verify every claim yourself, one command each: {{landing}}/docs/verify
 - Demo video: <add link>
 - Pitch video: <add link>
 

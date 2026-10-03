@@ -364,7 +364,7 @@ def write_report(out, path):
         "",
         "## Re-run it",
         "",
-        "```",
+        "```sh",
         "python3 research/lp_backtest.py             # uses research/data/rhnvda_rounds.csv",
         "python3 research/lp_backtest.py --refresh   # refetches every round from chain (RH_RPC_URL optional)",
         "```",

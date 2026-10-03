@@ -68,7 +68,7 @@ At 2x, the $30 open-interest cap binds before the 80% utilisation limit: a 2x po
 
 ## Re-run it
 
-```
+```sh
 python3 research/lp_backtest.py             # uses research/data/rhnvda_rounds.csv
 python3 research/lp_backtest.py --refresh   # refetches every round from chain (RH_RPC_URL optional)
 ```

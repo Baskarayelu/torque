@@ -152,7 +152,7 @@ function Dashboard({ cfg, toggleTheme }: { cfg: Config; toggleTheme: () => void 
     : !price
       ? "Reading the chain…"
       : !price.feedFresh
-        ? "Chainlink's NVDA price doesn't update while the stock market is closed, and TORQUE won't open a position on a price more than 12 hours old. This is the safety check working, not an outage. Opens resume with the next price."
+        ? "Chainlink's NVDA price updates when the price moves, not on a regular timer, so it can go quiet for hours: on calm weekdays as well as over weekends and market holidays. TORQUE won't open a position on a price more than 12 hours old. This is the safety check working, not an outage. Opens resume with the next price."
         : !price.poolAgrees
           ? "Paused by safety check: the pool has moved more than 1.5% from the Chainlink price. Opens resume when they agree."
           : !account
@@ -309,7 +309,7 @@ function Dashboard({ cfg, toggleTheme }: { cfg: Config; toggleTheme: () => void 
                 <button type="button" className="btn btn-accent wide" onClick={connect}>Connect wallet to open</button>
               ) : (
                 <button type="button" className="btn btn-accent wide" disabled={!!blocker || m < P.MIN_MARGIN} onClick={openPos}>
-                  {checksOk || !deployed ? "Open long NVDA" : paused ? "Paused until NVDA trades again" : "Paused by safety check"}
+                  {checksOk || !deployed ? "Open long NVDA" : paused ? "Paused until the next Chainlink price" : "Paused by safety check"}
                 </button>
               )}
               <p className="muted small">{msg.open || (deployed && checksOk && !account ? "Any wallet works: browser extension, or a phone wallet by QR code." : blocker) || (m < P.MIN_MARGIN ? `The minimum margin is ${P.MIN_MARGIN} USDG.` : "You confirm two transactions: approve USDG, then open.")}</p>
@@ -432,7 +432,7 @@ function Dashboard({ cfg, toggleTheme }: { cfg: Config; toggleTheme: () => void 
               <CheckBox title="Check 1 · Fresh price" ok={price?.feedFresh} pausable>
                 {price && !price.feedFresh ? (
                   <>
-                    Chainlink last printed <b className="mono">{ago(price.feedAge)}</b> ago. Limit: 12 h. Over weekends and market holidays the feed is quiet: opens and LP deposits pause; closing your position, claiming, and withdrawing while no loans are open still work.
+                    Chainlink last printed <b className="mono">{ago(price.feedAge)}</b> ago. Limit: 12 h. The feed prints when the price moves, so it goes quiet on calm weekdays as well as over weekends and holidays. Until the next print, opens and LP deposits pause; closing your position, claiming, and withdrawing while no loans are open still work.
                   </>
                 ) : (
                   <>

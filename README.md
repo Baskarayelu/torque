@@ -9,7 +9,7 @@ Read from Robinhood Chain mainnet at block 78,677,903 (2026-10-03 00:58 UTC):
 - Reproducible: [research/chain_snapshot.py](research/chain_snapshot.py) wrote [research/chain-snapshot-2026-10-03.json](research/chain-snapshot-2026-10-03.json) (an earlier read at block 78,338,439 is kept as [chain-snapshot-2026-10-02.json](research/chain-snapshot-2026-10-02.json); the figures move as markets do) from the market list in [research/](research/).
 
 <!-- deployment:status -->
-> **Status: live on Robinhood Chain mainnet.** TorqueMarket [`0xbee6Da89F879B018Fea5d7A78311db720B9D8096`](https://robinhoodchain.blockscout.com/address/0xbee6Da89F879B018Fea5d7A78311db720B9D8096) and TorqueVault [`0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf`](https://robinhoodchain.blockscout.com/address/0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf), deployed at block 78,466,999 on 2026-10-02 19:04 UTC and source-verified on Sourcify. Dashboard: [app.torque.0xo.in](https://app.torque.0xo.in).
+> **Status: live on Robinhood Chain mainnet.** TorqueMarket [`0xbee6Da89F879B018Fea5d7A78311db720B9D8096`](https://robinhoodchain.blockscout.com/address/0xbee6Da89F879B018Fea5d7A78311db720B9D8096) and TorqueVault [`0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf`](https://robinhoodchain.blockscout.com/address/0xb4dBEF56F9E93ED9A7649E065252dc98013B96Bf), deployed at block 78,466,999 on 2026-10-02 19:04 UTC and source-verified on Sourcify. Dashboard: [app.torque.0xo.in](https://app.torque.0xo.in). Docs: [https://torque.0xo.in/docs](https://torque.0xo.in/docs).
 <!-- /deployment:status -->
 
 People want leverage on stock tokens, but the dollars to fund it are not there. The demand is visible on-chain and the supply is maxed out. TORQUE brings its own USDG liquidity and a product shaped for retail:

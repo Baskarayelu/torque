@@ -71,8 +71,15 @@ for block in ("status", "deployments"):
     readme = pat.sub(lambda x: x.group(1) + render(f"readme-{block}.md") + "\n" + x.group(2), readme)
 write("README.md", readme)
 
-# Submission text
-write("submission/SUBMISSION.md", render("submission.md") + f"\n\n({len(v['contractField'])} of 300 characters)\n")
+# Submission text; blocks headed "(≤300 characters)" are checked and counted
+sub = render("submission.md")
+def _count(mt):
+    body = mt.group(2).strip()
+    if len(body) > 300:
+        sys.exit(f"submission block '{mt.group(1)}' is {len(body)} characters; the limit is 300")
+    return f"{mt.group(1)}\n{body}\n\n({len(body)} of 300 characters)\n\n"
+sub = re.sub(r"(## [^\n]*\(≤300 characters\))\n(.*?)\n\n", _count, sub, flags=re.S)
+write("submission/SUBMISSION.md", sub + f"\n\n({len(v['contractField'])} of 300 characters)\n")
 
 # Narration: paste-ready ElevenLabs text and the per-shot JSON the build scripts use
 for kind in ("demo", "pitch"):

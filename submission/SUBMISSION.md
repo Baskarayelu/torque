@@ -8,6 +8,30 @@ TORQUE
 ## One-liner
 Knock-out leverage on NVDA, settled in USDG on Robinhood Chain. The most you can lose is what you put in.
 
+## Short description (≤300 characters)
+Knock-out leverage on NVDA in Paxos USDG, live on Robinhood Chain mainnet. Choose 2–5×; the most you can lose is your margin. A USDG vault lends the rest and every position is hedged 1:1 with real NVDA. Contracts verified on Sourcify, no admin key; 24 of 25 planted bugs caught.
+
+(278 of 300 characters)
+
+## Problem (≤300 characters)
+Robinhood Chain holds $700.7M of USDG, but only $1.51M is lent against stock tokens and 96.6% of it is borrowed (block 78,677,903). Traders want leverage on stocks; the dollars to fund it are not there. TORQUE brings its own USDG liquidity, secured by real NVDA.
+
+(262 of 300 characters)
+
+## USDG integration (≤300 characters)
+USDG is the whole product: traders post USDG margin, LPs deposit USDG, the vault lends USDG and every payout is USDG. Knock-out residuals are credited and claimed, so a Paxos-frozen address can never block a knock-out.
+
+(218 of 300 characters)
+
+## Sponsors and integrations
+- **Paxos USDG**: the event's documented bonus. Margin, liquidity, loan and payout (`0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168`).
+- **Robinhood Chain mainnet (4663)**: the network, one of the event's eligible chains.
+- **Chainlink `RHNVDA / USD`**: the price TORQUE reads (`0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15`).
+- **Uniswap v3 NVDA/USDG 0.05% pool**: the hedge venue and the 30-minute average (`0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3`).
+- **Robinhood NVDA Stock Token**: the hedge asset (`0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC`).
+- **Sourcify and Blockscout**: source verification (exact match).
+- Morpho Blue: read-only research data for the market gap; not integrated.
+
 ## Deployment status
 Live on Robinhood Chain mainnet (chain 4663) since block 78,466,999 (2026-10-02 19:04 UTC), with real USDG and the LP vault capped at $20. Source verified on Sourcify.
 
@@ -24,6 +48,8 @@ Evidence: 9 solvency invariants written before the product code; an adversarial 
 - Code: https://github.com/Torque-Protocol/torque
 - Landing page: https://torque.0xo.in
 - Dashboard: https://app.torque.0xo.in
+- Docs: https://torque.0xo.in/docs
+- Every mainnet transaction: https://torque.0xo.in/docs/deployments
 - Demo video: <add link>
 - Pitch video: <add link>
 

@@ -5,7 +5,7 @@
  },
  {
   "id": "s02",
-  "text": "[measured] Before anything runs, two checks. ... Chainlink's Nvidia price must be fresh. It only prints when Nvidia moves, so it's hours old... and inside the twelve-hour limit. ... And the Uniswap pool's thirty-minute average must agree, within one and a half percent. ... Both pass..."
+  "text": "[measured] Before anything runs, two checks. ... Chainlink's Nvidia price must be fresh. Chainlink prints when Nvidia moves, not on a timer... so the dashboard shows exactly how old the price is, and it's well inside the twelve-hour limit. ... And the Uniswap pool's thirty-minute average must agree, within one and a half percent. ... Both pass..."
  },
  {
   "id": "s03",
